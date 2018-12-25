@@ -13,7 +13,9 @@ const API_Utils = require( "./api_utils.js" );
 
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
-const Personal = require( "./personal.js" );
+let Personal;
+try{ Personal = require( "./personal.js" ); }
+catch( e ) { Personal = require( "../personal_chess_com_streak_bot.js" ); }
 const IRC_Identity = Personal.irc.identity;
 
 var CHANNEL_COOLDOWN_MAP = {
