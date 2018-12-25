@@ -47,6 +47,7 @@ async function post_streak( user_name , channel ) {
 	//await API_Utils.getUsersLatestGames( "erichansen" );
 	let streak_data = await API_Utils.getUsersCurrentStreak( user_name );
 	console.log( streak_data );
+	if ( streak_data[ 0 ] < 1 ) { return; }
 	user_name = user_name || streak_data[ 2 ];
 	let message = user_name + " vs " + streak_data[ 1 ] + " " + "cbrahAdopt ".repeat( streak_data[ 0 ] );
 	irc_post( channel , message );
