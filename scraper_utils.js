@@ -33,8 +33,8 @@ function scrape_game_archive_page( user_name , page_number ) {
 					final_results.push( [ x_usernames[ 1 ] , x_results[ 1 ] , x_usernames[ 0 ] , x_results[ 0 ] ] );
 				}
 			}
-			console.log( final_results );
-			resolve();
+			//console.log( final_results );
+			resolve( final_results );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
@@ -42,6 +42,6 @@ function scrape_game_archive_page( user_name , page_number ) {
 module.exports.getUsersLatestGames = scrape_game_archive_page;
 
 
-( async ()=> {
-	await scrape_game_archive_page( "erichansen" );
-})();
+// ( async ()=> {
+// 	await scrape_game_archive_page( "erichansen" );
+// })();

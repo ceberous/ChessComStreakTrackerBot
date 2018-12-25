@@ -9,7 +9,8 @@ process.on( "uncaughtException" , function( err ) {
 
 const tmi = require( "tmi.js" );
 //const schedule = require( "node-schedule" );
-const API_Utils = require( "./api_utils.js" );
+//const API_Utils = require( "./api_utils.js" );
+const STREAK_SOLVER = require( "./streak_solver.js" );
 
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 
@@ -63,9 +64,14 @@ function irc_post( channel_name , message ) {
 	 });
 }
 
-async function post_streak( channel , user_name ) {
+async function post_twitch_channel_streak( channel ) {
+
+}
+
+async function post_user_streak( channel , user_name ) {
 	//console.log( channel );
-	let streak_data = await API_Utils.getUsersCurrentStreak( channel , user_name );
+	//let streak_data = await API_Utils.getUsersCurrentStreak( channel , user_name );
+	let streak_data = await STREAK_SOLVER.getUserStreak( user_name );
 	if ( !streak_data ) {
 		//irc_post( channel , "User Offline" );
 		return;
@@ -79,7 +85,7 @@ async function post_streak( channel , user_name ) {
 		return;
 	}
 
-	let message = user_name + " vs " + streak_data.opponent + " " + "cbrahAdopt ".repeat( streak_data.score );
+	let message = streak_data.message + " " + "cbrahAdopt ".repeat( streak_data.score );
 	irc_post( channel , message );
 }
 
@@ -91,7 +97,12 @@ function on_message( from , to , text , message ) {
 		if ( text.startsWith( "!streak" ) ) {
 			let username = text.split( " " );
 			let channel = from.substring( 1 );
-			post_streak( channel , username[ 1 ] );
+			if ( username[ 1 ] ) {
+				post_user_streak( channel , username[ 1 ] );
+			}
+			else {
+				post_twitch_channel_streak( channel );
+			}
 		}
 	}
 }
