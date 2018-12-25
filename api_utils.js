@@ -22,7 +22,6 @@ function MAKE_REQUEST( wURL ) {
 	});
 }
 
-
 const games_endpoint_base = "https://api.chess.com/pub/player/";
 function get_users_latest_games( user_name ) {
 	return new Promise( async function( resolve , reject ) {
@@ -62,11 +61,19 @@ function GET_LIVE_STATUS( user_name ) {
 	});
 }
 
-const cbrah_order = [ "erichansen" , "knvb" , "chessbrah" , "Hikaru" , "bless-rng" ];
-function PROMISE_ALL_LIVE_STATUS() {
+// Maps Twitch Username to Chess.com Usernames that stream on the channel
+const CHANNEL_MAP = {
+	chessbrah: [ "erichansen" , "knvb" , "chessbrah" ] ,
+	gmhikaru: [ "Hikaru" ] ,
+	gothamchess: [  ] ,
+	alexandrabotez: [  ] ,
+	manneredmonkey: [ "ekurtz" ] ,
+};
+
+function GET_CHANNELS_LIVE_USERS( channel ) {
 	return new Promise( function( resolve , reject ) {
 		try {
-			let wActions = cbrah_order.map( x => async () => { let x1 = await GET_LIVE_STATUS( x ); return x1; } );
+			let wActions = CHANNEL_MAP[ channel ].map( x => async () => { let x1 = await GET_LIVE_STATUS( x ); return x1; } );
 			pALL( wActions , { concurrency: 5 } ).then( result => {
 				resolve( result );
 			});
@@ -75,10 +82,10 @@ function PROMISE_ALL_LIVE_STATUS() {
 	});
 }
 
-function PROMISE_ALL_GAMES( live_users ) {
+function GET_USERS_GAMES( user_list ) {
 	return new Promise( function( resolve , reject ) {
 		try {
-			let wActions = live_users.map( x => async () => { let x1 = await get_users_latest_games( x[ "username" ] ); return x1; } );
+			let wActions = user_list.map( x => async () => { let x1 = await get_users_latest_games( x ); return x1; } );
 			pALL( wActions , { concurrency: 5 } ).then( result => {
 				resolve( result );
 			});
@@ -87,54 +94,68 @@ function PROMISE_ALL_GAMES( live_users ) {
 	});
 }
 
-function GET_MOST_LIKELY_LIVE_CBRAH() {
+function GET_LATEST_LIVE_USER_IN_CHANNEL( channel ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			let online = await PROMISE_ALL_LIVE_STATUS();
-			online = online.filter( x => x[ "status" ] !== false );
-			if ( online.length < 1 ) { resolve( false ); return; }
-			//if ( online.length === 1 ) { resolve( online[ 0 ][ "username" ] ); return; }
-			console.log( online );
-			let cbrah_games = await PROMISE_ALL_GAMES( online );
-			let first_end_times = cbrah_games.map( x => x[ 0 ][ "end_time" ] );
-			let games_with_latest_end_time = first_end_times.reduce( ( iMax , x , i , arr ) => x > arr[ iMax ] ? i : iMax , 0 );
-			let most_likely_username = online[ games_with_latest_end_time ][ "username" ];
+			// Go figure its unreliable , users are streaming and it says they are offline randomly
+			// let online = await PROMISE_ALL_LIVE_STATUS();
+			// online = online.filter( x => x[ "status" ] !== false );
+			// if ( online.length < 1 ) { resolve( false ); return; }
+			// if ( online.length === 1 ) {
+			// 	let latest_games = await get_users_latest_games( online[ 0 ] );
+			// 	resolve( [ online[ 0 ] , latest_games ] );
+			// 	return;
+			// }
+			//console.log( online );
+			let games = await PROMISE_ALL_GAMES( CHANNEL_MAP[ channel ] );
+			if ( !games ) { resolve( false ); return; }
+			if ( games.length < 1 ) { resolve( false ); return; }
+			let first_end_times = games.map( x => x[ 0 ][ "end_time" ] );
+			let latest_time_index = first_end_times.reduce( ( iMax , x , i , arr ) => x > arr[ iMax ] ? i : iMax , 0 );
+			let most_likely_username = online[ latest_time_index ][ "username" ];
 			console.log( "Most Likely 'Live' User == " + most_likely_username );
-			resolve( [ most_likely_username , cbrah_games[ games_with_latest_end_time ] ] );
+			//resolve( [ most_likely_username , games[ latest_time_index ] ] );
+			resolve( { username: most_likely_username , game_data: games[ latest_time_index ] } )
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
 
-function get_users_current_streak( user_name ) {
+
+function get_users_current_streak( channel , user_name ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			let latest_games;
+			let result = { score: null , opponent: null , our_guy: null };
+			let games;
+			// If the !streak command didn't contain a chess.com username , attempt to find latest in channel map
 			if ( !user_name ) {
-				let latest_games_data = await GET_MOST_LIKELY_LIVE_CBRAH();
-				user_name = latest_games_data[ 0 ];
-				latest_games = latest_games_data[ 1 ];
+				let latest_games_data = await GET_LATEST_LIVE_USER_IN_CHANNEL( channel );
+				// TODO: Add expiration time , like if last game was over an hour ago , don't report
+				user_name = latest_games_data.username;
+				games = latest_games_data.game_data;
 			}
 			else {
-				let user_satus = await GET_LIVE_STATUS( user_name );
-				if ( !user_satus.status ) { resolve( false ); return; }
-				latest_games = await get_users_latest_games( user_name );
-				if ( !latest_games ) { resolve( false ); return; }
-				if ( latest_games.length < 2 ) { resolve( false ); return; }
+				// Live Status Unreliable
+				// let user_satus = await GET_LIVE_STATUS( user_name );
+				// if ( !user_satus.status ) { resolve( false ); return; }
+				games = await get_users_latest_games( user_name );
+				if ( !games ) { resolve( false ); return; }
+				if ( games.length < 2 ) { resolve( false ); return; }
 			}
-
-			const last_opponent = ( latest_games[ 0 ][ "white" ][ "username" ] === user_name ) ? latest_games[ 0 ][ "black" ][ "username" ] : latest_games[ 0 ][ "white" ][ "username" ];
+			//console.log( games );
+			const last_opponent = ( games[ 0 ][ "white" ][ "username" ] === user_name ) ? games[ 0 ][ "black" ][ "username" ] : games[ 0 ][ "white" ][ "username" ];
 			console.log( "Last Opponent == " + last_opponent );
-			// const streak_games = latest_games.filter( x =>
+
+			// const streak_games = games.filter( x =>
 			// 	x[ "white" ][ "username" ] !== last_opponent && x[ "black" ][ "username" ] === last_opponent ||
 			// 	x[ "black" ][ "username" ] !== last_opponent && x[ "white" ][ "username" ] === last_opponent
 			// );
 
 			let streak_games = [];
-			for ( let i = 0; i < latest_games.length; ++i ) {
-				let white = latest_games[ i ][ "white" ];
-				let black = latest_games[ i ][ "black" ];
-				if ( white.username === last_opponent || black.username === last_opponent ) { streak_games.push( latest_games[ i ] ); }
+			for ( let i = 0; i < games.length; ++i ) {
+				let white = games[ i ][ "white" ];
+				let black = games[ i ][ "black" ];
+				if ( white.username === last_opponent || black.username === last_opponent ) { streak_games.push( games[ i ] ); }
 				else { break; }
 			}
 			//console.log( streak_games );
@@ -147,7 +168,11 @@ function get_users_current_streak( user_name ) {
 				if ( our_guy.result === "win" ) { streak = streak + 1; }
 				else { break; }
 			}
-			resolve( [ streak , last_opponent , user_name ] );
+			//resolve( [ streak , last_opponent , user_name ] );
+			result.streak = streak;
+			result.opponent = last_opponent;
+			result.our_guy = user_name;
+			resolve( result );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
