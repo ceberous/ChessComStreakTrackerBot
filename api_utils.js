@@ -116,6 +116,8 @@ function get_users_current_streak( user_name ) {
 				latest_games = latest_games_data[ 1 ];
 			}
 			else {
+				let user_satus = await GET_LIVE_STATUS( user_name );
+				if ( !user_satus.status ) { resolve( false ); return; }
 				latest_games = await get_users_latest_games( user_name );
 				if ( !latest_games ) { resolve( false ); return; }
 				if ( latest_games.length < 2 ) { resolve( false ); return; }

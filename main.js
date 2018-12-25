@@ -46,6 +46,7 @@ async function post_streak( user_name , channel ) {
 	// Should be atomic
 	//await API_Utils.getUsersLatestGames( "erichansen" );
 	let streak_data = await API_Utils.getUsersCurrentStreak( user_name );
+	if ( !streak_data ) { return; } // user offline;
 	console.log( streak_data );
 	if ( streak_data[ 0 ] < 1 ) { return; }
 	user_name = user_name || streak_data[ 2 ];
