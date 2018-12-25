@@ -4,7 +4,7 @@ const pALL = require( "p-all" );
 function MAKE_REQUEST( wURL ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			request( wURL , async function ( err , response , body ) {
+			request( { url: wURL , headers: { "Cache-Control": "private, no-store, max-age=0" } } , async function ( err , response , body ) {
 				if ( err ) { resolve("error"); return; }
 				console.log( wURL + "\n\t--> RESPONSE_CODE = " + response.statusCode.toString() );
 				if ( response.statusCode !== 200 ) {
@@ -22,6 +22,10 @@ function MAKE_REQUEST( wURL ) {
 	});
 }
 
+// Jebaited again , last game is not updating in this json point
+// html scraping pepoDance lol
+// https://www.chess.com/games/archive/erichansen
+// https://www.chess.com/games/archive?gameOwner=other_game&username=erichansen&gameType=recent&gameTypeall=live&gameTypeall=daily&gameResult=&opponent=&opening=&color=&gameTourTeam=&gameTitle=&timeSort=desc&rated=&startDate%5Bdate%5D=12%2F24%2F2018&endDate%5Bdate%5D=12%2F25%2F2018&fen=&ratingFrom=&ratingTo=&search=
 const games_endpoint_base = "https://api.chess.com/pub/player/";
 function get_users_latest_games( user_name ) {
 	return new Promise( async function( resolve , reject ) {
