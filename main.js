@@ -102,7 +102,7 @@ function on_message( from , to , text , message ) {
 	//	console.log('The answer to life, the universe, and everything!');
 	// });
 	await IRC_Client.connect();
-	console.log( "connected" );
+	console.log( "Chess Com Streak Bot Restarted" );
 	IRC_Client.on( "message" , on_message );
 	//post_streak();
 })();
