@@ -69,13 +69,14 @@ async function post_streak( channel , user_name ) {
 		return;
 	}
 	user_name = user_name || streak_data.our_guy;
+	console.log( streak_data );
 	if ( streak_data.score < 1 ) {
 		let msg = user_name + " vs " + streak_data.opponent + " = No Streak";
 		console.log( msg );
 		irc_post( channel , msg );
 		return;
 	}
-	console.log( streak_data );
+
 	let message = user_name + " vs " + streak_data.opponent + " " + "cbrahAdopt ".repeat( streak_data.score );
 	irc_post( channel , message );
 }

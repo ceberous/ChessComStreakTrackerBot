@@ -159,6 +159,7 @@ function get_users_current_streak( channel , user_name ) {
 				else { break; }
 			}
 			//console.log( streak_games );
+			// TODO : Add Reverse Adoption Score ?
 			let streak = 0;
 			for ( let i = 0; i < streak_games.length; ++i ) {
 				let white = streak_games[ i ][ "white" ];
@@ -169,7 +170,7 @@ function get_users_current_streak( channel , user_name ) {
 				else { break; }
 			}
 			//resolve( [ streak , last_opponent , user_name ] );
-			result.streak = streak;
+			result.score = streak;
 			result.opponent = last_opponent;
 			result.our_guy = user_name;
 			resolve( result );
@@ -178,3 +179,8 @@ function get_users_current_streak( channel , user_name ) {
 	});
 }
 module.exports.getUsersCurrentStreak = get_users_current_streak;
+
+function get_users_current_streak_vs_other_user( channel , user_name , other_user ) {
+
+}
+module.exports.getUsersCurrentStreakVSOtherUser = get_users_current_streak_vs_other_user;
