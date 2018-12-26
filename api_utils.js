@@ -92,8 +92,9 @@ function try_match_username( user_name_attempt ) {
 			// console.log( verified );
 			// if ( verified !== null && verified !== "null" ) { resolve( verified ); return; }
 
-			//let patterns = _build_patterns_from_char( user_name_attempt , "?" );
-			let patterns = _build_patterns_from_char( user_name_attempt , "*" );
+			let patterns_1 = _build_patterns_from_char( user_name_attempt , "?" );
+			let patterns_2 = _build_patterns_from_char( user_name_attempt , "*" );
+			let patterns = [ ...patterns_1 , ...patterns_2 ];
 			patterns = patterns.map( x => "un:" + x );
 			console.log( patterns );
 			let suggestions = [];
@@ -103,6 +104,7 @@ function try_match_username( user_name_attempt ) {
 				suggestions.push.apply( suggestions , x_sugg );
 			}
 			suggestions = suggestions.map( x => x.split( "un:" )[ 1 ] );
+			//suggestions.sort();
 			console.log( suggestions );
 			let most_likely_guess = _get_most_frequent_in_array( suggestions );
 			console.log( "Most Likely Username is " + most_likely_guess );
@@ -117,7 +119,7 @@ function try_match_username( user_name_attempt ) {
 // 	MyRedis = new RMU( 2 );
 // 	await MyRedis.init();
 // 	//await update_chess_com_usernames()
-// 	await try_match_username( "hikaru" );
+// 	await try_match_username( "bless" );
 
 // })();
 
