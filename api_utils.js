@@ -166,8 +166,8 @@ function _get_who_is_user_name( user_name ) {
 			if ( !data ) { resolve( false ); return; }
 			data = JSON.parse( data );
 			if ( !data ) { resolve( false ); return; }
-			if ( !data[ "name" ] ) { resolve( false ); return; }
-			if ( data[ "name" ].length < 1 ) { resolve( false ); return; }
+			if ( !data[ "name" ] ) { resolve( "unknown" ); return; }
+			if ( data[ "name" ].length < 1 ) { resolve( "unknown" ); return; }
 			resolve( data[ "name" ] );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
