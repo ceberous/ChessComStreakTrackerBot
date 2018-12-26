@@ -178,12 +178,12 @@ function get_who_is_user_name( user_name ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			let real_name = await _get_who_is_user_name( user_name );
-			if ( real_name ) { resolve( user_name + " is : " + real_name ); return; }
+			if ( real_name ) { resolve( [ user_name + " is : " + real_name , user_name ]  ); return; }
 			let best_match = await try_match_username( user_name );
-			if ( !best_match ) { resolve( false ); return; }
+			if ( !best_match ) { resolve( [ false , false ] ); return; }
 			real_name = await _get_who_is_user_name( best_match );
 			let message = best_match + " is : " + real_name;
-			resolve( message );
+			resolve( [ message , best_match ] );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});

@@ -77,7 +77,9 @@ function irc_post( channel_name , message ) {
 
 async function post_who_is_user_name( channel , user_name ) {
 	let real_name_message = await API_UTILS.whoIsUserName( user_name );
-	if ( !real_name_message ) { return; }
+	if ( !real_name_message[ 1 ] ) { return; }
+	if ( !real_name_message[ 0 ] ) { real_name_message = "No Data for " + real_name_message[ 1 ]; }
+	else { real_name_message = real_name_message[ 0 ]; }
 	irc_post( channel , real_name_message );
 }
 
@@ -153,7 +155,7 @@ function on_message( from , to , text , message ) {
 		let channel = from.substring( 1 );
 		let username = text.split( " " );
 		if ( username[ 1 ] === "is" ) {
-			username = username[ 2 ];
+			post_who_is_user_name( channel , username[ 2 ] );
 		}
 		// else { username = username[ 1 ]; }
 		// post_who_is_user_name( channel , username );
