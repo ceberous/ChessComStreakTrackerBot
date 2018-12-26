@@ -1,10 +1,14 @@
 const request = require( "request" );
+const pALL = require( "p-all" );
+
+function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
+module.exports.sleep = sleep;
 
 function MAKE_REQUEST( wURL ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			request( { url: wURL , headers: { "Cache-Control": "private, no-store, max-age=0" } } , async function ( err , response , body ) {
-				if ( err ) { resolve("error"); return; }
+				if ( err ) { resolve( false ); return; }
 				console.log( wURL + "\n\t--> RESPONSE_CODE = " + response.statusCode.toString() );
 				if ( response.statusCode !== 200 ) {
 					//console.log( "bad status code ... " );
@@ -21,3 +25,18 @@ function MAKE_REQUEST( wURL ) {
 	});
 }
 module.exports.makeRequest = MAKE_REQUEST;
+
+
+function PROMISE_FUNCTION_TO_ALL_ARRAY( wArray , wFunction , wConcurrency ) {
+	return new Promise( function( resolve , reject ) {
+		try {
+			wConcurrency = wConcurrency || 3;
+			let wActions = wArray.map( x => async () => { let x1 = await wFunction( x ); return x1; } );
+			pALL( wActions , { concurrency: wConcurrency } ).then( result => {
+				resolve( result );
+			});
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.promiseAll = PROMISE_FUNCTION_TO_ALL_ARRAY;

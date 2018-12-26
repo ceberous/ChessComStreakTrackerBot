@@ -1,7 +1,107 @@
-
 const pALL = require( "p-all" );
-
+var reds = require( "reds" );
+const RMU = require( "redis-manager-utils" );
 const MAKE_REQUEST = require( "./generic_utils.js" ).makeRequest;
+const PROMISE_ALL = require( "./generic_utils.js" ).promiseAll;
+const SLEEP = require( "./generic_utils.js" ).sleep;
+
+
+var MyRedis = null;
+
+const COUNTRY_ISOS_P1 = [ "AA" , "AB" , "AC" , "AD" , "AE" , "AF" , "AG" , "AH" , "AI" , "AJ", "AK" , "AL" , "AM"	, "AN" , "AO" , "AP" , "AQ" , "AR" , "AS" , "AT" , "AU" , "AV" , "AW" , "AX" , "AY"	, "AZ" ,
+"BA" , "BB" , "BC" , "BD" , "BE" , "BF"	, "BG" , "BH" , "BI" , "BJ"	, "BK" , "BL" , "BM" , "BN" , "BO" , "BP" , "BQ" , "BR" , "BS" , "BT" , "BU" , "BV" , "BW" , "BX" , "BY"	, "BZ" ,
+"CA" , "CB" , "CC" , "CD" , "CE" , "CF"	, "CG" , "CH" , "CI" , "CJ"	, "CK" , "CL" , "CM" , "CN" , "CO" , "CP" , "CQ" , "CR" , "CS" , "CT" , "CU" , "CV" , "CW" , "CX" , "CY" , "CZ" ,
+"DA" , "DB" , "DC" , "DD" , "DE" , "DF"	, "DG" , "DH" , "DI" , "DJ"	, "DK" , "DL" , "DM" , "DN" , "DO" , "DP" , "DQ" , "DR" , "DS" , "DT" , "DU" , "DV" , "DW" , "DX" , "DY" , "DZ" ,
+"EA" , "EB" , "EC" , "ED" , "EE" , "EF"	, "EG" , "EH" , "EI" , "EJ"	, "EK" , "EL" , "EM" , "EN" , "EO" , "EP" , "EQ" , "ER" , "ES" , "ET" , "EU" , "EV" , "EW" , "EX" , "EY" , "EZ" ,
+"FA" , "FB" , "FC" , "FD" , "FE" , "FF"	, "FG" , "FH" , "FI" , "FJ"	, "FK" , "FL" , "FM" , "FN" , "FO" , "FP" , "FQ" , "FR" , "FS" , "FT" , "FU" , "FV" , "FW" , "FX" , "FY" , "FZ" ,
+"GA" , "GB" , "GC" , "GD" , "GE" , "GF"	, "GG" , "GH" , "GI" , "GJ"	, "GK" , "GL" , "GM" , "GN" , "GO" , "GP" , "GQ" , "GR" , "GS" , "GT" , "GU" , "GV" , "GW" , "GX" , "GY" , "GZ" ,
+"HA" , "HB" , "HC" , "HD" , "HE" , "HF"	, "HG" , "HH" , "HI" , "HJ"	, "HK" , "HL" , "HM" , "HN" , "HO" , "HP" , "HQ" , "HR" , "HS" , "HT" , "HU" , "HV" , "HW" , "HX" , "HY" , "HZ" ,
+"IA" , "IB" , "IC" , "ID" , "IE" , "IF"	, "IG" , "IH" , "II" , "IJ"	, "IK" , "IL" , "IM" , "IN" , "IO" , "IP" , "IQ" , "IR" , "IS" , "IT" , "IU" , "IV" , "IW" , "IX" , "IY" , "IZ" ];
+
+const COUNTRY_ISOS_P2 = [ "JA" , "JB" , "JC" , "JD" , "JE" , "JF" , "JG" , "JH" , "JI" , "JJ" , "JK" , "JL" , "JM" , "JN" , "JO" , "JP" , "JQ" , "JR" , "JS" , "JT" , "JU" , "JV" , "JW" , "JX" , "JY" , "JZ" ,
+"KA" , "KB" , "KC" , "KD" , "KE" , "KF"	, "KG" , "KH" , "KI" , "KJ"	, "KK" , "KL" , "KM" , "KN" , "KO" , "KP" , "KQ" , "KR" , "KS" , "KT" , "KU" , "KV" , "KW" , "KX" , "KY" , "KZ" ,
+"LA" , "LB" , "LC" , "LD" , "LE" , "LF"	, "LG" , "LH" , "LI" , "LJ"	, "LK" , "LL" , "LM" , "LN" , "LO" , "LP" , "LQ" , "LR" , "LS" , "LT" , "LU" , "LV" , "LW" , "LX" , "LY" , "LZ" ,
+"MA" , "MB" , "MC" , "MD" , "ME" , "MF"	, "MG" , "MH" , "MI" , "MJ"	, "MK" , "ML" , "MM" , "MN" , "MO" , "MP" , "MQ" , "MR" , "MS" , "MT" , "MU" , "MV" , "MW" , "MX" , "MY" , "MZ" ,
+"NA" , "NB" , "NC" , "ND" , "NE" , "NF"	, "NG" , "NH" , "NI" , "NJ"	, "NK" , "NL" , "NM" , "NN" , "NO" , "NP" , "NQ" , "NR" , "NS" , "NT" , "NU" , "NV" , "NW" , "NX" , "NY" , "NZ" ,
+"OA" , "OB" , "OC" , "OD" , "OE" , "OF"	, "OG" , "OH" , "OI" , "OJ"	, "OK" , "OL" , "OM" , "ON" , "OO" , "OP" , "OQ" , "OR" , "OS" , "OT" , "OU" , "OV" , "OW" , "OX" , "OY" , "OZ" ,
+"PA" , "PB" , "PC" , "PD" , "PE" , "PF"	, "PG" , "PH" , "PI" , "PJ"	, "PK" , "PL" , "PM" , "PN" , "PO" , "PP" , "PQ" , "PR" , "PS" , "PT" , "PU" , "PV" , "PW" , "PX" , "PY" , "PZ" ,
+"QA" , "QB" , "QC" , "QD" , "QE" , "QF"	, "QG" , "QH" , "QI" , "QJ"	, "QK" , "QL" , "QM" , "QN" , "QO" , "QP" , "QQ" , "QR" , "QS" , "QT" , "QU" , "QV" , "QW" , "QX" , "QY" , "QZ" ,
+"RA" , "RB" , "RC" , "RD" , "RE" , "RF"	, "RG" , "RH" , "RI" , "RJ"	, "RK" , "RL" , "RM" , "RN" , "RO" , "RP" , "RQ" , "RR" , "RS" , "RT" , "RU" , "RV" , "RW" , "RX" , "RY" , "RZ" ,
+"SA" , "SB" , "SC" , "SD" , "SE" , "SF"	, "SG" , "SH" , "SI" , "SJ"	, "SK" , "SL" , "SM" , "SN" , "SO" , "SP" , "SQ" , "SR" , "SS" , "ST" , "SU" , "SV" , "SW" , "SX" , "SY" , "SZ" ];
+
+const COUNTRY_ISOS_P3 = [ "TA" , "TB" , "TC" , "TD" , "TE" , "TF"	, "TG" , "TH" , "TI" , "TJ"	, "TK" , "TL" , "TM" , "TN" , "TO" , "TP" , "TQ" , "TR" , "TS" , "TT" , "TU" , "TV" , "TW" , "TX" , "TY" , "TZ" ,
+"UA" , "UB" , "UC" , "UD" , "UE" , "UF"	, "UG" , "UH" , "UI" , "UJ"	, "UK" , "UL" , "UM" , "UN" , "UO" , "UP" , "UQ" , "UR" , "US" , "UT" , "UU" , "UV" , "UW" , "UX" , "UY" , "UZ" ,
+"VA" , "VB" , "VC" , "VD" , "VE" , "VF"	, "VG" , "VH" , "VI" , "VJ"	, "VK" , "VL" , "VM" , "VN" , "VO" , "VP" , "VQ" , "VR" , "VS" , "VT" , "VU" , "VV" , "VW" , "VX" , "VY" , "VZ" ,
+"WA" , "WB" , "WC" , "WD" , "WE" , "WF"	, "WG" , "WH" , "WI" , "WJ"	, "WK" , "WL" , "WM" , "WN" , "WO" , "WP" , "WQ" , "WR" , "WS" , "WT" , "WU" , "WV" , "WW" , "WX" , "WY" , "WZ" ,
+"XA" , "XB" , "XC" , "XD" , "XE" , "XF"	, "XG" , "XH" , "XI" , "XJ"	, "XK" , "XL" , "XM" , "XN" , "XO" , "XP" , "XQ" , "XR" , "XS" , "XT" , "XU" , "XV" , "XW" , "XX" , "XY" , "XZ" ,
+"YA" , "YB" , "YC" , "YD" , "YE" , "YF"	, "YG" , "YH" , "YI" , "YJ"	, "YK" , "YL" , "YM" , "YN" , "YO" , "YP" , "YQ" , "YR" , "YS" , "YT" , "YU" , "YV" , "YW" , "YX" , "YY" , "YZ" ,
+"ZA" , "ZB" , "ZC" , "ZD" , "ZE" , "ZF"	, "ZG" , "ZH" , "ZI" , "ZJ"	, "ZK" , "ZL" , "ZM" , "ZN" , "ZO" , "ZP" , "ZQ" , "ZR" , "ZS" , "ZT" , "ZU" , "ZV" , "ZW" , "ZX" , "ZY" , "ZZ" ];
+const usernames_in_country_base_url = "https://api.chess.com/pub/country/";
+function get_usernames_in_country( country_iso_code ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			let url = usernames_in_country_base_url + country_iso_code + "/players";
+			let players;
+			players = await MAKE_REQUEST( url );
+			if ( !players ) { resolve( false ); return; }
+			try { players = JSON.parse( players ); }
+			catch( e ) { resolve( false ); return; }
+			players = players[ "players" ];
+			console.log( players );
+
+			const length = players.length;
+			const interval = 1000;
+			let consumed = 0;
+			console.log( "Player Count == " + length.toString() );
+			while( consumed < length ) {
+				await MyRedis.setSetFromArray( "chess_com_players" , players.slice( consumed , interval ) );
+				consumed = consumed + interval;
+				console.log( "Consumed Indexs [" + consumed.toString() + "] through " + ( consumed + interval ).toString() );
+				await SLEEP( 1000 );
+			}
+			if ( consumed !== length ) {
+				console.log( "Consumed Remaining Indexs [" + consumed.toString() + "] through " + ( length - 1 ).toString() );
+				await MyRedis.setSetFromArray( "chess_com_players" , players.slice( consumed , ( length - 1 ) ) );
+				await SLEEP( 1000 );
+			}
+			resolve( true );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function update_chess_com_usernames() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			// await PROMISE_ALL( COUNTRY_ISOS_P1 , get_usernames_in_country , 3 );
+			// await PROMISE_ALL( COUNTRY_ISOS_P2 , get_usernames_in_country , 3 );
+			await PROMISE_ALL( COUNTRY_ISOS_P3 , get_usernames_in_country , 3 );
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function try_match_username( user_name ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			let search = reds.createSearch( user_name );
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+// ( async ()=> {
+
+// 	MyRedis = new RMU( 2 );
+// 	await MyRedis.init();
+// 	//await update_chess_com_usernames()
+// 	reds.setClient( MyRedis.redis );
+// 	await try_match_username( "chavir" );
+
+// })();
+
 
 // Jebaited again , last game is not updating in this json point
 // html scraping pepoDance lol
@@ -165,7 +265,7 @@ function get_users_current_streak( channel , user_name ) {
 }
 module.exports.getUsersCurrentStreak = get_users_current_streak;
 
-function get_users_current_streak_vs_other_user( channel , user_name , other_user ) {
+// function get_users_current_streak_vs_other_user( channel , user_name , other_user ) {
 
-}
-module.exports.getUsersCurrentStreakVSOtherUser = get_users_current_streak_vs_other_user;
+// }
+// module.exports.getUsersCurrentStreakVSOtherUser = get_users_current_streak_vs_other_user;
