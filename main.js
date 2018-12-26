@@ -9,7 +9,6 @@ process.on( "uncaughtException" , function( err ) {
 
 const tmi = require( "tmi.js" );
 //const schedule = require( "node-schedule" );
-//const API_Utils = require( "./api_utils.js" );
 const STREAK_SOLVER = require( "./streak_solver.js" );
 
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }

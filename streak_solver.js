@@ -69,9 +69,9 @@ function compute_twitch_channel_streak( channel ) {
 }
 module.exports.getTwitchChannelStreak = compute_twitch_channel_streak;
 
-( async ()=> {
+// ( async ()=> {
 
-	let results = await compute_twitch_channel_streak( "gothamchess" );
-	console.log( results );
+// 	let results = await compute_twitch_channel_streak( "gothamchess" );
+// 	console.log( results );
 
-})();
+// })();
