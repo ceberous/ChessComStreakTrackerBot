@@ -89,6 +89,8 @@ function _build_patterns_from_char( wString , wChar ) {
 	}
 	patterns.push( wString + wChar );
 	patterns.push( wString + wChar + wChar );
+	patterns.push( wChar + wString + wChar );
+	patterns.push( wChar + wChar + wString + wChar + wChar );
 	return patterns;
 }
 
