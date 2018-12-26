@@ -2,6 +2,8 @@ const cheerio = require( "cheerio" );
 //const puppeteer = require( "puppeteer" );
 const MAKE_REQUEST = require( "./generic_utils.js" ).makeRequest;
 
+const CHANNEL_MAP = require( "./constants.js" ).CHANNEL_MAP;
+
 const base_archive_url = "https://www.chess.com/games/archive/";
 function scrape_game_archive_page( user_name , page_number ) {
 	return new Promise( async function( resolve , reject ) {
@@ -15,6 +17,8 @@ function scrape_game_archive_page( user_name , page_number ) {
 			catch( err ) { resolve( false ); return; }
 			let final_results = [];
 			let game_table_data = $( "#content table tr" );
+			let time = 0;
+
 			for ( let i = 1; i < game_table_data.length; ++i ) {
 				let final_obj = { usernames: [] , results: [] }
 				let x_usernames = [];
@@ -26,12 +30,19 @@ function scrape_game_archive_page( user_name , page_number ) {
 				let results = $( children[ 1 ] ).find( ".game-result" );
 				x_results.push( $( results[ 0 ] ).text() );
 				x_results.push( $( results[ 1 ] ).text() );
+				let entry;
 				if ( user_name === x_usernames[ 0 ] ) {
-					final_results.push( [ x_usernames[ 0 ] , x_results[ 0 ] , x_usernames[ 1 ] , x_results[ 1 ] ] );
+					entry = [ x_usernames[ 0 ] , x_results[ 0 ] , x_usernames[ 1 ] , x_results[ 1 ] ];
 				}
 				else {
-					final_results.push( [ x_usernames[ 1 ] , x_results[ 1 ] , x_usernames[ 0 ] , x_results[ 0 ] ] );
+					entry = [ x_usernames[ 1 ] , x_results[ 1 ] , x_usernames[ 0 ] , x_results[ 0 ] ];
 				}
+				let game_id = $( children[ 1 ] ).children();
+				game_id = $( game_id[ 0 ] ).attr( "href" );
+				game_id = game_id.split( "?" )[ 0 ];
+				game_id = game_id.split( "/game/" )[ 1 ];
+				entry.push( game_id );
+				final_results.push( entry );
 			}
 			//console.log( final_results );
 			resolve( final_results );
@@ -41,6 +52,16 @@ function scrape_game_archive_page( user_name , page_number ) {
 }
 module.exports.getUsersLatestGames = scrape_game_archive_page;
 
+
+function get_latest_live_user_in_twitch_channel( channel ) {
+	return new Promise( function( resolve , reject ) {
+		try {
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.getLatestLiveUserInTwitchChannel = get_latest_live_user_in_twitch_channel;
 
 // ( async ()=> {
 // 	await scrape_game_archive_page( "erichansen" );

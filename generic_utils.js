@@ -40,3 +40,9 @@ function PROMISE_FUNCTION_TO_ALL_ARRAY( wArray , wFunction , wConcurrency ) {
 	});
 }
 module.exports.promiseAll = PROMISE_FUNCTION_TO_ALL_ARRAY;
+
+
+function GET_INDEX_OF_LARGEST_IN_ARRAY( wArray ) {
+	return wArray.reduce( ( iMax , x , i , arr ) => x > arr[ iMax ] ? i : iMax , 0 );
+}
+module.exports.getLargestIndexInArray = GET_INDEX_OF_LARGEST_IN_ARRAY;

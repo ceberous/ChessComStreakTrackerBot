@@ -65,7 +65,24 @@ function irc_post( channel_name , message ) {
 }
 
 async function post_twitch_channel_streak( channel ) {
+	//console.log( channel );
+	//let streak_data = await API_Utils.getTwitchChannelStreak( channel , user_name );
+	let streak_data = await STREAK_SOLVER.getTwitchChannelStreak( channel );
+	if ( !streak_data ) {
+		//irc_post( channel , "User Offline" );
+		return;
+	}
+	user_name = user_name || streak_data.our_guy;
+	console.log( streak_data );
+	if ( streak_data.score < 1 ) {
+		let msg = user_name + " vs " + streak_data.opponent + " = No Streak";
+		console.log( msg );
+		irc_post( channel , msg );
+		return;
+	}
 
+	let message = streak_data.message + " " + "cbrahAdopt ".repeat( streak_data.score );
+	irc_post( channel , message );
 }
 
 async function post_user_streak( channel , user_name ) {
