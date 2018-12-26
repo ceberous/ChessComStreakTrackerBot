@@ -1,9 +1,6 @@
 const pALL = require( "p-all" );
-//var reds = require( "reds" );
-//const RMU = require( "redis-manager-utils" );
-// https://docs.mongodb.com/manual/core/index-text/
-const elasticlunr = require( "elasticlunr" );
-const fs = require( "fs" );
+const RMU = require( "redis-manager-utils" );
+
 const MAKE_REQUEST = require( "./generic_utils.js" ).makeRequest;
 const PROMISE_ALL = require( "./generic_utils.js" ).promiseAll;
 const SLEEP = require( "./generic_utils.js" ).sleep;
@@ -16,74 +13,8 @@ const CHANNEL_MAP = require( "./constants.js" ).CHANNEL_MAP;
 
 var MyRedis = null;
 
-var store = null;
-
-function search_username_store( search_term ) {
-	let result = store.search( search_term , { expand: true , fields: { name: { boost: 2 } , id: { boost: 0 }  } } );
-	console.log( result );
-	return result;
-}
-
-function load_username_store() {
-	let saved_store = fs.readFileSync( "./username_store.json" );
-	saved_store = JSON.parse( saved_store );
-	//console.log( saved_store );
-	console.time( "load" );
-	store = elasticlunr.Index.load( saved_store )
-}
-
 const usernames_in_country_base_url = "https://api.chess.com/pub/country/";
-
-var username_store_index = 0;
-function get_usernames_in_country_elastic_lunr( country_iso_code ) {
-	return new Promise( async function( resolve , reject ) {
-		try {
-			let url = usernames_in_country_base_url + country_iso_code + "/players";
-			let players;
-			players = await MAKE_REQUEST( url );
-			if ( !players ) { resolve( false ); return; }
-			try { players = JSON.parse( players ); }
-			catch( e ) { resolve( false ); return; }
-			players = players[ "players" ];
-			//console.log( players );
-			store = elasticlunr(function () {
-			    this.addField( "id" );
-			    this.addField( "name" );
-			});
-			for ( let i = 0; i < players.length; ++i ) {
-				store.addDoc( { id: username_store_index , name: players[ i ] } );
-				username_store_index = username_store_index + 1;
-			}
-			await SLEEP( 3000 );
-			resolve( true );
-		}
-		catch( error ) { console.log( error ); reject( error ); }
-	});
-}
-
-
-function update_chess_com_usernames_elastic_lunar() {
-	return new Promise( async function( resolve , reject ) {
-		try {
-			username_store_index = 0;
-			// await PROMISE_ALL( COUNTRY_ISOS_P1 , get_usernames_in_country_elastic_lunr , 3 );
-			// await PROMISE_ALL( COUNTRY_ISOS_P2 , get_usernames_in_country_elastic_lunr , 3 );
-			await PROMISE_ALL( COUNTRY_ISOS_P3 , get_usernames_in_country_elastic_lunr , 3 );
-			fs.writeFileSync( "./username_store.json" , JSON.stringify( store ) );
-			username_store_index = 0;
-			resolve();
-		}
-		catch( error ) { console.log( error ); reject( error ); }
-	});
-}
-
-// ( async ()=> {
-// 	//await update_chess_com_usernames_elastic_lunar();
-// 	load_username_store();
-// 	search_username_store( "GothamChess" );
-// })();
-
-function get_usernames_in_country_redis( country_iso_code ) {
+function get_usernames_in_country( country_iso_code ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			let url = usernames_in_country_base_url + country_iso_code + "/players";
@@ -95,18 +26,11 @@ function get_usernames_in_country_redis( country_iso_code ) {
 			players = players[ "players" ];
 			//console.log( players );
 			const length = players.length;
-			const interval = 1000;
-			let consumed = 0;
 			console.log( "Player Count == " + length.toString() );
-			while( consumed < length ) {
-				await MyRedis.setSetFromArray( "chess_com_players" , players.slice( consumed , interval ) );
-				consumed = consumed + interval;
-				console.log( "Consumed Indexs [" + consumed.toString() + "] through " + ( consumed + interval ).toString() );
-				await SLEEP( 1000 );
-			}
-			if ( consumed !== length ) {
-				console.log( "Consumed Remaining Indexs [" + consumed.toString() + "] through " + ( length - 1 ).toString() );
-				await MyRedis.setSetFromArray( "chess_com_players" , players.slice( consumed , ( length - 1 ) ) );
+			while ( players.length > 0 ) {
+				let chunk = players.splice( 0 , 500 );
+				let args = chunk.map( x => [ "set" , "un:" + x , x ] );
+				await MyRedis.keySetMulti( args );
 				await SLEEP( 1000 );
 			}
 			resolve( true );
@@ -115,7 +39,7 @@ function get_usernames_in_country_redis( country_iso_code ) {
 	});
 }
 
-function update_chess_com_usernames_redis() {
+function update_chess_com_usernames() {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			await PROMISE_ALL( COUNTRY_ISOS_P1 , get_usernames_in_country , 3 );
@@ -127,25 +51,29 @@ function update_chess_com_usernames_redis() {
 	});
 }
 
-function try_match_username( user_name ) {
+function try_match_username( user_name_attempt ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			let search = reds.createSearch( user_name );
+			let verified = await MyRedis.keyGet( "un:" + user_name_attempt );
+			console.log( verified );
+			if ( verified !== null && verified !== "null" ) { resolve( verified ); return; }
+			let final_suggestions = [];
+			let try_1 = await MyRedis.keysGetFromPattern( "un:" + user_name_attempt.toLowerCase() + "*" );
+			console.log( try_1 );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
 
-// ( async ()=> {
+( async ()=> {
 
-// 	MyRedis = new RMU( 2 );
-// 	await MyRedis.init();
-// 	//await update_chess_com_usernames()
-// 	reds.setClient( MyRedis.redis );
-// 	await try_match_username( "chavir" );
+	MyRedis = new RMU( 2 );
+	await MyRedis.init();
+	//await update_chess_com_usernames()
+	await try_match_username( "bless-rn" );
 
-// })();
+})();
 
 
 // Jebaited again , last game is not updating in this json point

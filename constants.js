@@ -5,6 +5,7 @@ module.exports.CHANNEL_MAP = {
 	gothamchess: [ "GothamChess" , "Blindovich" ] ,
 	alexandrabotez: [  ] ,
 	manneredmonkey: [ "ekurtz" ] ,
+	johnbartholomew: [ "Fins0905" ] ,
 };
 
 
