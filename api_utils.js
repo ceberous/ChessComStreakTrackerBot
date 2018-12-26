@@ -75,6 +75,7 @@ function try_match_username( user_name_attempt ) {
 			// if ( verified !== null && verified !== "null" ) { resolve( verified ); return; }
 
 			let patterns = _build_patterns_from_char( user_name_attempt , "?" );
+			let suggestions = await MyRedis.keysGetFromPattern( patterns );
 			console.log( patterns );
 			resolve();
 		}
