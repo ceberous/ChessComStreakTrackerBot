@@ -51,15 +51,31 @@ function update_chess_com_usernames() {
 	});
 }
 
+function _build_patterns_from_char( wString , wChar ) {
+	let patterns = [];
+	let sarray = Array.from( wString );
+	let slength = sarray.length;
+	for ( let i = 1; i < ( slength + 1 ); ++i ) {
+		let left_side = sarray.slice( 0 , ( i - 1 ) );
+		left_side = left_side.join( "" );
+		let right_side = sarray.slice( ( i ) , slength );
+		right_side = right_side.join( "" );
+		let pattern = left_side + wChar + right_side;
+		patterns.push( pattern );
+	}
+	return patterns;
+}
+
 function try_match_username( user_name_attempt ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			let verified = await MyRedis.keyGet( "un:" + user_name_attempt );
-			console.log( verified );
-			if ( verified !== null && verified !== "null" ) { resolve( verified ); return; }
-			let final_suggestions = [];
-			let try_1 = await MyRedis.keysGetFromPattern( "un:" + user_name_attempt.toLowerCase() + "*" );
-			console.log( try_1 );
+			user_name_attempt = user_name_attempt.toLowerCase();
+			// let verified = await MyRedis.keyGet( "un:" + user_name_attempt );
+			// console.log( verified );
+			// if ( verified !== null && verified !== "null" ) { resolve( verified ); return; }
+
+			let patterns = _build_patterns_from_char( user_name_attempt , "?" );
+			console.log( patterns );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -68,10 +84,10 @@ function try_match_username( user_name_attempt ) {
 
 ( async ()=> {
 
-	MyRedis = new RMU( 2 );
-	await MyRedis.init();
+	// MyRedis = new RMU( 2 );
+	// await MyRedis.init();
 	//await update_chess_com_usernames()
-	await try_match_username( "bless-rn" );
+	await try_match_username( "bless-rng" );
 
 })();
 
