@@ -66,6 +66,23 @@ function _build_patterns_from_char( wString , wChar ) {
 	return patterns;
 }
 
+function _get_most_frequent_in_array( arr ) {
+	let map = {};
+	let mostFrequentElement = arr[ 0 ];
+	for( let i = 0; i < arr.length; i++ ) {
+		if( !map[ arr[ i ] ] ) {
+			map[ arr[ i ] ] = 1;
+		}
+		else {
+			++map[ arr[ i ] ];
+			if( map[ arr[ i ] ] > map[ mostFrequentElement ] ) {
+				mostFrequentElement = arr[ i ];
+			}
+		}
+	}
+	return mostFrequentElement;
+}
+
 function try_match_username( user_name_attempt ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
@@ -74,10 +91,21 @@ function try_match_username( user_name_attempt ) {
 			// console.log( verified );
 			// if ( verified !== null && verified !== "null" ) { resolve( verified ); return; }
 
-			let patterns = _build_patterns_from_char( user_name_attempt , "?" );
-			let suggestions = await MyRedis.keysGetFromPattern( patterns );
+			//let patterns = _build_patterns_from_char( user_name_attempt , "?" );
+			let patterns = _build_patterns_from_char( user_name_attempt , "*" );
+			patterns = patterns.map( x => "un:" + x );
 			console.log( patterns );
-			resolve();
+			let suggestions = [];
+			//let suggestions = await MyRedis.keysGetFromPattern( patterns );
+			for ( let i = 0; i < patterns.length; ++i ) {
+				let x_sugg = await MyRedis.keysGetFromPattern( patterns[ i ] );
+				suggestions.push.apply( suggestions , x_sugg );
+			}
+			suggestions = suggestions.map( x => x.split( "un:" )[ 1 ] );
+			console.log( suggestions );
+			let most_likely_guess = _get_most_frequent_in_array( suggestions );
+			console.log( "Most Likely Username is " + most_likely_guess );
+			resolve( most_likely_guess );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
@@ -85,10 +113,10 @@ function try_match_username( user_name_attempt ) {
 
 ( async ()=> {
 
-	// MyRedis = new RMU( 2 );
-	// await MyRedis.init();
+	MyRedis = new RMU( 2 );
+	await MyRedis.init();
 	//await update_chess_com_usernames()
-	await try_match_username( "bless-rng" );
+	await try_match_username( "hikaru" );
 
 })();
 
