@@ -47,8 +47,7 @@ function get_usernames_in_country( country_iso_code ) {
 			try { players = JSON.parse( players ); }
 			catch( e ) { resolve( false ); return; }
 			players = players[ "players" ];
-			console.log( players );
-
+			//console.log( players );
 			const length = players.length;
 			const interval = 1000;
 			let consumed = 0;
@@ -73,8 +72,8 @@ function get_usernames_in_country( country_iso_code ) {
 function update_chess_com_usernames() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			// await PROMISE_ALL( COUNTRY_ISOS_P1 , get_usernames_in_country , 3 );
-			// await PROMISE_ALL( COUNTRY_ISOS_P2 , get_usernames_in_country , 3 );
+			await PROMISE_ALL( COUNTRY_ISOS_P1 , get_usernames_in_country , 3 );
+			await PROMISE_ALL( COUNTRY_ISOS_P2 , get_usernames_in_country , 3 );
 			await PROMISE_ALL( COUNTRY_ISOS_P3 , get_usernames_in_country , 3 );
 			resolve();
 		}
