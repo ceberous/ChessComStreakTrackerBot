@@ -77,6 +77,8 @@ function _build_patterns_from_char( wString , wChar ) {
 	let patterns = [];
 	let sarray = Array.from( wString );
 	let slength = sarray.length;
+	patterns.push( wChar + wString );
+	patterns.push( wChar + wChar + wString );
 	for ( let i = 1; i < ( slength + 1 ); ++i ) {
 		let left_side = sarray.slice( 0 , ( i - 1 ) );
 		left_side = left_side.join( "" );
@@ -85,6 +87,8 @@ function _build_patterns_from_char( wString , wChar ) {
 		let pattern = left_side + wChar + right_side;
 		patterns.push( pattern );
 	}
+	patterns.push( wString + wChar );
+	patterns.push( wString + wChar + wChar );
 	return patterns;
 }
 
@@ -117,9 +121,9 @@ function try_match_username( user_name_attempt ) {
 				return;
 			}
 
-			let patterns_1 = _build_patterns_from_char( user_name_attempt , "?" );
-			let patterns_2 = _build_patterns_from_char( user_name_attempt , "*" );
-			let patterns = [ ...patterns_1 , ...patterns_2 ];
+			let patterns = _build_patterns_from_char( user_name_attempt , "?" );
+			//let patterns_2 = _build_patterns_from_char( user_name_attempt , "*" );
+			//let patterns = [ ...patterns_1 , ...patterns_2 ];
 			patterns = patterns.map( x => "un:" + x );
 			console.log( patterns );
 			let suggestions = [];
@@ -128,6 +132,8 @@ function try_match_username( user_name_attempt ) {
 				let x_sugg = await MyRedis.keysGetFromPattern( patterns[ i ] );
 				suggestions.push.apply( suggestions , x_sugg );
 			}
+			if ( !suggestions ) { resolve( false ); return; }
+			if ( suggestions.length < 1 ) { resolve( false ); return; }
 			suggestions = suggestions.map( x => x.split( "un:" )[ 1 ] );
 			//suggestions.sort();
 			console.log( suggestions );

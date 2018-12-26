@@ -42,8 +42,9 @@ function compute_user_streak( user_name ) {
 		try {
 			//let games = await API_UTILS.getUsersLatestGames( user_name );
 			let best_guess_user_name = await API_UTILS.tryMatchUserName( user_name );
+			if ( !best_guess_user_name ) { resolve( false ); return; }
 			let games = await SCRAPER_UTILS.getUsersLatestGames( best_guess_user_name );
-			let result = _compute_streak( games , user_name );
+			let result = _compute_streak( games , best_guess_user_name );
 			resolve( result );
 		}
 		catch( error ) { console.log( error ); reject( error ); }

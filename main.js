@@ -102,10 +102,10 @@ async function post_user_streak( channel , user_name ) {
 		//irc_post( channel , "User Offline" );
 		return;
 	}
-	user_name = user_name || streak_data.our_guy;
+	//user_name = user_name || streak_data.our_guy;
 	console.log( streak_data );
 	if ( streak_data.score < 1 ) {
-		let msg = user_name + " vs " + streak_data.opponent + " = No Streak";
+		let msg = streak_data.our_guy + " vs " + streak_data.opponent + " = No Streak";
 		console.log( msg );
 		irc_post( channel , msg );
 		return;
