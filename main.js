@@ -8,10 +8,20 @@ process.on( "uncaughtException" , function( err ) {
 });
 
 const tmi = require( "tmi.js" );
+const RMU = require( "redis-manager-utils" );
 //const schedule = require( "node-schedule" );
-const STREAK_SOLVER = require( "./streak_solver.js" );
 
-function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
+var MyRedis = null;
+var STREAK_SOLVER = null;
+( async ()=> {
+	MyRedis = new RMU( 2 );
+	await MyRedis.init();
+	module.exports.redis = MyRedis;
+	console.log( "Connected to Redis" );
+	STREAK_SOLVER = require( "./streak_solver.js" );
+})();
+
+const sleep = require( "./generic_utils.js" ).sleep;
 
 let Personal;
 try{ Personal = require( "./personal.js" ); }

@@ -1,5 +1,5 @@
 const pALL = require( "p-all" );
-const RMU = require( "redis-manager-utils" );
+//const RMU = require( "redis-manager-utils" );
 
 const MAKE_REQUEST = require( "./generic_utils.js" ).makeRequest;
 const PROMISE_ALL = require( "./generic_utils.js" ).promiseAll;
@@ -11,7 +11,7 @@ const COUNTRY_ISOS_P2 = require( "./constants.js" ).COUNTRY_ISOS_P2
 const COUNTRY_ISOS_P3 = require( "./constants.js" ).COUNTRY_ISOS_P3
 const CHANNEL_MAP = require( "./constants.js" ).CHANNEL_MAP;
 
-var MyRedis = null;
+const MyRedis = require( "./main.js" ).redis;
 
 const usernames_in_country_base_url = "https://api.chess.com/pub/country/";
 function get_usernames_in_country( country_iso_code ) {
@@ -27,24 +27,46 @@ function get_usernames_in_country( country_iso_code ) {
 			//console.log( players );
 			const length = players.length;
 			console.log( "Player Count == " + length.toString() );
+
+			let chunks = [];
 			while ( players.length > 0 ) {
 				let chunk = players.splice( 0 , 500 );
 				let args = chunk.map( x => [ "set" , "un:" + x , x ] );
-				await MyRedis.keySetMulti( args );
+				chunks.push( args );
+			}
+			for ( let i = 0; i < chunks.length; ++i ) {
+				await MyRedis.keySetMulti( chunks[ i ] );
 				await SLEEP( 1000 );
 			}
+
+			// while ( players.length > 0 ) {
+			// 	let chunk = players.splice( 0 , 500 );
+			// 	let args = chunk.map( x => [ "set" , "un:" + x , x ] );
+			// 	await MyRedis.keySetMulti( args );
+			// 	await SLEEP( 1000 );
+			// }
+
 			resolve( true );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
 
+// Around 20 minutes
 function update_chess_com_usernames() {
 	return new Promise( async function( resolve , reject ) {
 		try {
+			console.time( "update_usernames" );
+			console.time( "update_usernames_p1" );
 			await PROMISE_ALL( COUNTRY_ISOS_P1 , get_usernames_in_country , 3 );
+			console.timeEnd( "update_usernames_p1" );
+			console.time( "update_usernames_p2" );
 			await PROMISE_ALL( COUNTRY_ISOS_P2 , get_usernames_in_country , 3 );
+			console.timeEnd( "update_usernames_p2" );
+			console.time( "update_usernames_p3" );
 			await PROMISE_ALL( COUNTRY_ISOS_P3 , get_usernames_in_country , 3 );
+			console.timeEnd( "update_usernames_p3" );
+			console.timeEnd( "update_usernames" );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -88,9 +110,12 @@ function try_match_username( user_name_attempt ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			user_name_attempt = user_name_attempt.toLowerCase();
-			// let verified = await MyRedis.keyGet( "un:" + user_name_attempt );
-			// console.log( verified );
-			// if ( verified !== null && verified !== "null" ) { resolve( verified ); return; }
+			let verified = await MyRedis.keyGet( "un:" + user_name_attempt );
+			if ( verified !== null && verified !== "null" ) {
+				console.log( "Found Verified Match  = " + verified );
+				resolve( verified );
+				return;
+			}
 
 			let patterns_1 = _build_patterns_from_char( user_name_attempt , "?" );
 			let patterns_2 = _build_patterns_from_char( user_name_attempt , "*" );
@@ -113,13 +138,14 @@ function try_match_username( user_name_attempt ) {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
+module.exports.tryMatchUserName = try_match_username;
 
 // ( async ()=> {
 
 // 	MyRedis = new RMU( 2 );
 // 	await MyRedis.init();
-// 	//await update_chess_com_usernames()
-// 	await try_match_username( "bless" );
+// 	await update_chess_com_usernames()
+// 	//await try_match_username( "bless" );
 
 // })();
 

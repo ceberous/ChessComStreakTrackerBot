@@ -41,7 +41,8 @@ function compute_user_streak( user_name ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			//let games = await API_UTILS.getUsersLatestGames( user_name );
-			let games = await SCRAPER_UTILS.getUsersLatestGames( user_name );
+			let best_guess_user_name = await API_UTILS.tryMatchUserName( user_name );
+			let games = await SCRAPER_UTILS.getUsersLatestGames( best_guess_user_name );
 			let result = _compute_streak( games , user_name );
 			resolve( result );
 		}

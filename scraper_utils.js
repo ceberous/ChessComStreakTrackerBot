@@ -25,8 +25,12 @@ function scrape_game_archive_page( user_name , page_number ) {
 				let x_results = [];
 				let children = $( game_table_data[ i ] ).children();
 				let usernames = $( children[ 0 ] ).find( ".user-tagline .username" );
-				x_usernames.push( $( usernames[ 0 ] ).attr( "data-username" ) );
-				x_usernames.push( $( usernames[ 1 ] ).attr( "data-username" ) );
+				let x_un_0 = $( usernames[ 0 ] ).attr( "data-username" );
+				x_un_0 = x_un_0.toLowerCase();
+				let x_un_1 = $( usernames[ 1 ] ).attr( "data-username" );
+				x_un_1 = x_un_1.toLowerCase();
+				x_usernames.push( x_un_0 );
+				x_usernames.push( x_un_1 );
 				let results = $( children[ 1 ] ).find( ".game-result" );
 				x_results.push( $( results[ 0 ] ).text() );
 				x_results.push( $( results[ 1 ] ).text() );
