@@ -66,6 +66,13 @@ function update_chess_com_usernames() {
 			console.time( "update_usernames_p3" );
 			await PROMISE_ALL( COUNTRY_ISOS_P3 , get_usernames_in_country , 3 );
 			console.timeEnd( "update_usernames_p3" );
+
+			// Now We Need To Fill in Gaps ,
+			// beacuse apparently "erichansen" isn't actually on the list of Canadian Players
+			// https://api.chess.com/pub/country/CA/players
+			// Even though , https://api.chess.com/pub/player/erichansen says that he is
+			await MyRedis.keySet( "un:erichansen" , "erichansen" );
+
 			console.timeEnd( "update_usernames" );
 			resolve();
 		}
@@ -147,6 +154,41 @@ function try_match_username( user_name_attempt ) {
 	});
 }
 module.exports.tryMatchUserName = try_match_username;
+
+const BASE_WHO_IS_URL = " https://api.chess.com/pub/player/";
+function _get_who_is_user_name( user_name ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			if ( !user_name ) { resolve( false ); return; }
+			if ( user_name.length < 1 ) { resolve( false ); return; }
+			let url = BASE_WHO_IS_URL + user_name;
+			let data = await MAKE_REQUEST( url );
+			if ( !data ) { resolve( false ); return; }
+			data = JSON.parse( data );
+			if ( !data ) { resolve( false ); return; }
+			if ( !data[ "name" ] ) { resolve( false ); return; }
+			if ( data[ "name" ].length < 1 ) { resolve( false ); return; }
+			resolve( data[ "name" ] );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function get_who_is_user_name( user_name ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			let real_name = await _get_who_is_user_name( user_name );
+			if ( real_name ) { resolve( user_name + " is : " + real_name ); return; }
+			let best_match = await try_match_username( user_name );
+			if ( !best_match ) { resolve( false ); return; }
+			real_name = await _get_who_is_user_name( best_match );
+			let message = best_match + " is : " + real_name;
+			resolve( message );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.whoIsUserName = get_who_is_user_name;
 
 // ( async ()=> {
 

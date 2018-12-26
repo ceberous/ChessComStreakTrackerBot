@@ -13,12 +13,14 @@ const RMU = require( "redis-manager-utils" );
 
 var MyRedis = null;
 var STREAK_SOLVER = null;
+var API_UTILS = null;
 ( async ()=> {
 	MyRedis = new RMU( 2 );
 	await MyRedis.init();
 	module.exports.redis = MyRedis;
 	console.log( "Connected to Redis" );
 	STREAK_SOLVER = require( "./streak_solver.js" );
+	API_UTILS = require( "./api_utils.js" );
 })();
 
 const sleep = require( "./generic_utils.js" ).sleep;
@@ -73,9 +75,15 @@ function irc_post( channel_name , message ) {
 	 });
 }
 
+async function post_who_is_user_name( channel , user_name ) {
+	let real_name_message = await API_UTILS.whoIsUserName( user_name );
+	if ( !real_name_message ) { return; }
+	irc_post( channel , real_name_message );
+}
+
 async function post_twitch_channel_streak( channel ) {
 	//console.log( channel );
-	//let streak_data = await API_Utils.getTwitchChannelStreak( channel , user_name );
+	//let streak_data = await API_UTILS.getTwitchChannelStreak( channel , user_name );
 	let streak_data = await STREAK_SOLVER.getTwitchChannelStreak( channel );
 	if ( !streak_data ) {
 		//irc_post( channel , "User Offline" );
@@ -96,7 +104,7 @@ async function post_twitch_channel_streak( channel ) {
 
 async function post_user_streak( channel , user_name ) {
 	//console.log( channel );
-	//let streak_data = await API_Utils.getUsersCurrentStreak( channel , user_name );
+	//let streak_data = await API_UTILS.getUsersCurrentStreak( channel , user_name );
 	let streak_data = await STREAK_SOLVER.getUserStreak( user_name );
 	if ( !streak_data ) {
 		//irc_post( channel , "User Offline" );
@@ -130,6 +138,25 @@ function on_message( from , to , text , message ) {
 				post_twitch_channel_streak( channel );
 			}
 		}
+		else if ( text.startsWith( "!who" ) ) {
+			let username = text.split( " " );
+			let channel = from.substring( 1 );
+			post_who_is_user_name( channel , username[ 1 ] );
+		}
+		else if ( text.startsWith( "!whois" ) ) {
+			let username = text.split( " " );
+			let channel = from.substring( 1 );
+			post_who_is_user_name( channel , username[ 1 ] );
+		}
+	}
+	else if ( text.startsWith( "who" ) ) {
+		let channel = from.substring( 1 );
+		let username = text.split( " " );
+		if ( username[ 1 ] === "is" ) {
+			username = username[ 2 ];
+		}
+		else { username = username[ 1 ]; }
+		post_who_is_user_name( channel , username );
 	}
 }
 
