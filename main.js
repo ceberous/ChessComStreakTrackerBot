@@ -155,8 +155,8 @@ function on_message( from , to , text , message ) {
 		if ( username[ 1 ] === "is" ) {
 			username = username[ 2 ];
 		}
-		else { username = username[ 1 ]; }
-		post_who_is_user_name( channel , username );
+		// else { username = username[ 1 ]; }
+		// post_who_is_user_name( channel , username );
 	}
 }
 
