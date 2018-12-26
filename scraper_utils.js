@@ -52,17 +52,6 @@ function scrape_game_archive_page( user_name , page_number ) {
 }
 module.exports.getUsersLatestGames = scrape_game_archive_page;
 
-
-function get_latest_live_user_in_twitch_channel( channel ) {
-	return new Promise( function( resolve , reject ) {
-		try {
-			resolve();
-		}
-		catch( error ) { console.log( error ); reject( error ); }
-	});
-}
-module.exports.getLatestLiveUserInTwitchChannel = get_latest_live_user_in_twitch_channel;
-
 // ( async ()=> {
 // 	await scrape_game_archive_page( "erichansen" );
 // })();
