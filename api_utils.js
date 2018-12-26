@@ -83,6 +83,7 @@ function _get_most_frequent_in_array( arr ) {
 	return mostFrequentElement;
 }
 
+// https://redis.io/commands/keys
 function try_match_username( user_name_attempt ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
@@ -111,14 +112,14 @@ function try_match_username( user_name_attempt ) {
 	});
 }
 
-( async ()=> {
+// ( async ()=> {
 
-	MyRedis = new RMU( 2 );
-	await MyRedis.init();
-	//await update_chess_com_usernames()
-	await try_match_username( "hikaru" );
+// 	MyRedis = new RMU( 2 );
+// 	await MyRedis.init();
+// 	//await update_chess_com_usernames()
+// 	await try_match_username( "hikaru" );
 
-})();
+// })();
 
 
 // Jebaited again , last game is not updating in this json point
