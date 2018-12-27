@@ -44,7 +44,7 @@ function _compute_streak( games , user_name , channel ) {
 		result.message =  user_name + " vs " + last_opponent + " [-" + result.reverse_score.toString() + "] = Reverse Adoption BibleThump";
 	}
 	else if ( result.score > 0 ) {
-		result.message = user_name + " vs " + last_opponent + " [" + result.score.toString() + "] " + ( emote + " " ).repeat( streak_data.score );;
+		result.message = user_name + " vs " + last_opponent + " [" + result.score.toString() + "] " + ( emote + " " ).repeat( result.score );;
 	}
 	else {
 		result.message = user_name + " vs " + last_opponent + " = No Streak";
