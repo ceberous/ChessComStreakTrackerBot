@@ -31,13 +31,13 @@ catch( e ) { Personal = require( "../personal_chess_com_streak_bot.js" ); }
 const IRC_Identity = Personal.irc.identity;
 
 var CHANNEL_COOLDOWN_MAP = {
-	chessbrah: { last_time: 0 , cooldown: 10 , emote: "cbrahAdopt" } ,
-	gmhikaru: { last_time: 0 , cooldown: 10 , emote: "cbrahAdopt" } ,
-	gothamchess: { last_time: 0 , cooldown: 10 , emote: "cbrahAdopt" } ,
-	alexandrabotez: { last_time: 0 , cooldown: 10 , emote: "cbrahAdopt" } ,
-	manneredmonkey: { last_time: 0 , cooldown: 10 , emote: "cbrahAdopt" } ,
-	dy_hydro_o: { last_time: 0 , cooldown: 10 , emote: "cbrahAdopt" } ,
-	ram_ram_ram_ram: { last_time: 0 , cooldown: 10 , emote: "cbrahAdopt" } ,
+	chessbrah: { last_time: 0 , cooldown: 10 } ,
+	gmhikaru: { last_time: 0 , cooldown: 10 } ,
+	gothamchess: { last_time: 0 , cooldown: 10 } ,
+	alexandrabotez: { last_time: 0 , cooldown: 10 } ,
+	manneredmonkey: { last_time: 0 , cooldown: 10 } ,
+	dy_hydro_o: { last_time: 0 , cooldown: 10 } ,
+	ram_ram_ram_ram: { last_time: 0 , cooldown: 10 }
 };
 
 const IRC_Client = new tmi.client({
@@ -106,33 +106,17 @@ async function post_twitch_channel_streak( channel ) {
 		return;
 	}
 	console.log( streak_data );
-	if ( streak_data.score < 1 ) {
-		let msg = streak_data.our_guy + " vs " + streak_data.opponent + " = No Streak";
-		console.log( msg );
-		irc_post( channel , msg );
-		return;
-	}
-
-	let message = streak_data.message + " " +  ( CHANNEL_COOLDOWN_MAP[ channel ].emote + " " ).repeat( streak_data.score );
-	irc_post( channel , message );
+	irc_post( channel , streak_data.message );
 }
 
 async function post_user_streak( channel , user_name ) {
-	let streak_data = await STREAK_SOLVER.getUserStreak( user_name );
+	let streak_data = await STREAK_SOLVER.getUserStreak( user_name , channel );
 	if ( !streak_data ) {
 		//irc_post( channel , "User Offline" );
 		return;
 	}
 	console.log( streak_data );
-	if ( streak_data.score < 1 ) {
-		let msg = streak_data.our_guy + /*" vs " + streak_data.opponent + */ " = No Streak";
-		console.log( msg );
-		irc_post( channel , msg );
-		return;
-	}
-
-	let message = streak_data.message + " " + ( CHANNEL_COOLDOWN_MAP[ channel ].emote + " " ).repeat( streak_data.score );
-	irc_post( channel , message );
+	irc_post( channel , streak_data.message );
 }
 
 function on_message( from , to , text , message ) {

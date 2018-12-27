@@ -6,11 +6,14 @@ const GET_LARGEST_INDEX_IN_ARRAY = require( "./generic_utils.js" ).getLargestInd
 
 const CHANNEL_MAP = require( "./constants.js" ).CHANNEL_MAP;
 
-function _compute_streak( games , user_name ) {
+function _compute_streak( games , user_name , channel ) {
 	const last_opponent = games[ 0 ][ 2 ];
 	console.log( "Last Opponent == " + last_opponent );
-
-	let result = { score: 0 , opponent: last_opponent , our_guy: user_name , message: "" };
+	channel = channel || "chessbrah";
+	let emote;
+	if ( !CHANNEL_MAP[ channel ] ) { emote = "cbrahAdopt"; }
+	else { emote = CHANNEL_MAP[ channel ].emote; }
+	let result = { score: 0 , reverse_score: 0 , opponent: last_opponent , our_guy: user_name , message: "" };
 
 	//let streak_games = [];
 	for ( let i = 0; i < games.length; ++i ) {
@@ -23,28 +26,40 @@ function _compute_streak( games , user_name ) {
 		}
 		else { break; }
 	}
-	//console.log( streak_games );
-	// TODO : Add Reverse Adoption Score ?
-	// let streak = 0;
-	// for ( let i = 0; i < streak_games.length; ++i ) {
-	// 	console.log( i.toString() + " == " + user_name + " == " + streak_games[ i ][ 1 ] + " vs " + last_opponent + " == " + black.result );
-	// 	let our_guy = ( white.username === user_name ) ? white : black;
-	// 	if ( our_guy.result === "win" ) { streak = streak + 1; }
-	// 	else { break; }
-	// }
-	//resolve( [ streak , last_opponent , user_name ] );
-	result.message = user_name + " vs " + last_opponent + " [" + result.score.toString() + "]";
+	// Reverse Adoption Score ?
+	if ( result.score === 0 ) {
+		for ( let i = 0; i < games.length; ++i ) {
+			if ( games[ i ][ 2 ] === last_opponent ) {
+				console.log( i.toString() + " == " + user_name + " == " + games[ i ][ 1 ] + " vs " + last_opponent + " == " + games[ i ][ 3 ] );
+				if ( games[ i ][ 3 ] === "1" ) {
+					result.reverse_score = result.reverse_score + 1;
+				}
+				else { break; }
+			}
+			else { break; }
+		}
+	}
+	if ( result.reverse_score > 0 ) {
+		//result.message =  user_name + " vs " + last_opponent + " [-" + result.reverse_score.toString() + "] = Reverse Adoption PogChamp BibleThump";
+		result.message =  user_name + " vs " + last_opponent + " [-" + result.reverse_score.toString() + "] = Reverse Adoption BibleThump";
+	}
+	else if ( result.score > 0 ) {
+		result.message = user_name + " vs " + last_opponent + " [" + result.score.toString() + "] " + ( emote + " " ).repeat( streak_data.score );;
+	}
+	else {
+		result.message = user_name + " vs " + last_opponent + " = No Streak";
+	}
 	return result;
 }
 
-function compute_user_streak( user_name ) {
+function compute_user_streak( user_name , channel ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			//let games = await API_UTILS.getUsersLatestGames( user_name );
 			let best_guess_user_name = await API_UTILS.tryMatchUserName( user_name );
 			if ( !best_guess_user_name ) { resolve( false ); return; }
 			let games = await SCRAPER_UTILS.getUsersLatestGames( best_guess_user_name );
-			let result = _compute_streak( games , best_guess_user_name );
+			let result = _compute_streak( games , best_guess_user_name , channel );
 			resolve( result );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -57,13 +72,13 @@ function compute_twitch_channel_streak( channel ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			if ( !CHANNEL_MAP[ channel ] ) { resolve( false ); return; }
-			let games = await PROMISE_ALL( CHANNEL_MAP[ channel ] , SCRAPER_UTILS.getUsersLatestGames , 3 );
+			let games = await PROMISE_ALL( CHANNEL_MAP[ channel ].usernames , SCRAPER_UTILS.getUsersLatestGames , 3 );
 			let firsts = games.map( x => x[ 0 ] );
 			let firsts_ids = firsts.map( x => x[ 4 ] );
 			let largest_index = GET_LARGEST_INDEX_IN_ARRAY( firsts_ids );
 			let likely_latest_username = firsts[ largest_index ][ 0 ];
 			let likely_latest_games = games[ largest_index ];
-			let result = _compute_streak( likely_latest_games , likely_latest_username );
+			let result = _compute_streak( likely_latest_games , likely_latest_username , channel );
 			resolve( result );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
