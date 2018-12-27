@@ -75,13 +75,31 @@ function irc_post( channel_name , message ) {
 	 });
 }
 
+// { username: user_name , message: null , best_match: false , real_name: false };
 async function post_who_is_user_name( channel , user_name ) {
-	let real_name_message = await API_UTILS.whoIsUserName( user_name );
-	if ( !real_name_message[ 1 ] ) { real_name_message = "No Data for " + user_name; }
-	if ( !real_name_message[ 0 ] ) { real_name_message = "No Data for " + real_name_message[ 1 ]; }
-	else { real_name_message = real_name_message[ 0 ]; }
-	if ( real_name_message.length < 2 ) { real_name_message = "No Data for " + user_name; }
-	irc_post( channel , real_name_message );
+	// let real_name_message = await API_UTILS.whoIsUserName( user_name );
+	// if ( !real_name_message[ 1 ] ) { real_name_message = "No Data for " + user_name; }
+	// if ( !real_name_message[ 0 ] ) { real_name_message = "No Data for " + real_name_message[ 1 ]; }
+	// else { real_name_message = real_name_message[ 0 ]; }
+	// if ( real_name_message.length < 2 ) { real_name_message = "No Data for " + user_name; }
+	// irc_post( channel , real_name_message );
+	let final_message;
+	let result = await API_UTILS.whoIsUserName( user_name );
+	if ( !result.message ) {
+		if ( result.best_match ) {
+			// Username provided doesn't exist ,
+			// but tried to guess Best Match ,
+			// However , there still is no 'Real Name' for the 'Best Match'
+			final_message = "No Data for " + result.best_match;
+		}
+		else {
+			final_message = "No Data for " + user_name;
+		}
+	}
+	else {
+		final_message = result.message;
+	}
+	irc_post( channel , final_message );
 }
 
 async function post_twitch_channel_streak( channel ) {

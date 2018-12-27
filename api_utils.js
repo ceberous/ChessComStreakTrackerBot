@@ -163,16 +163,19 @@ const BASE_WHO_IS_URL = " https://api.chess.com/pub/player/";
 function _get_who_is_user_name( user_name ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			if ( !user_name ) { resolve( false ); return; }
-			if ( user_name.length < 1 ) { resolve( false ); return; }
+			let result = { verified: false , real_name: false };
+			if ( !user_name ) { resolve( result ); return; }
+			if ( user_name.length < 1 ) { resolve( result ); return; }
 			let url = BASE_WHO_IS_URL + user_name;
 			let data = await MAKE_REQUEST( url );
-			if ( !data ) { resolve( false ); return; }
+			if ( !data ) { resolve( result ); return; }
 			data = JSON.parse( data );
-			if ( !data ) { resolve( false ); return; }
-			if ( !data[ "name" ] ) { resolve( "unknown" ); return; }
-			if ( data[ "name" ].length < 1 ) { resolve( "unknown" ); return; }
-			resolve( data[ "name" ] );
+			if ( !data ) { resolve( result ); return; }
+			result.verified = true;
+			if ( !data[ "name" ] ) { resolve( result ); return; }
+			if ( data[ "name" ].length < 1 ) { resolve( result ); return; }
+			result.real_name = data[ "name" ];
+			resolve( result );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
@@ -181,18 +184,32 @@ function _get_who_is_user_name( user_name ) {
 function get_who_is_user_name( user_name ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			let real_name = await _get_who_is_user_name( user_name );
-			if ( real_name ) {
-				if ( real_name !== "unknown" ) {
-					resolve( [ user_name + " is : " + real_name , user_name ]  );
+			let result = { username: user_name , message: false , best_match: false , real_name: false };
+			let user = await _get_who_is_user_name( user_name );
+			console.log( user );
+			if ( user.verified ) {
+				if ( user.real_name ) {
+					result.message = user_name + " is : " + user.real_name;
+					result.real_name = user.real_name;
+					resolve( result );
+					return;
+				}
+				else {
+					resolve( result );
 					return;
 				}
 			}
 			let best_match = await try_match_username( user_name );
-			if ( !best_match ) { resolve( [ false , false ] ); return; }
-			real_name = await _get_who_is_user_name( best_match );
-			let message = best_match + " is : " + real_name;
-			resolve( [ message , best_match ] );
+			if ( !best_match ) {
+				resolve( resolve );
+				return;
+			}
+			result.best_match = best_match;
+			user = await _get_who_is_user_name( best_match );
+			result.best_match = best_match;
+			result.message = best_match + " is : " + user.real_name;
+			result.real_name = real_name;
+			resolve( result );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
