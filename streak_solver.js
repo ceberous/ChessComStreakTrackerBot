@@ -57,16 +57,15 @@ function _compute_streak( games , user_name , channel ) {
 function compute_user_streak( user_name , channel ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			//let games = await API_UTILS.getUsersLatestGames( user_name );
-			let best_guess_user_name = await API_UTILS.tryMatchUserName( user_name );
-			if ( !best_guess_user_name.username ) { resolve( false ); return; }
+			let best_guess = await API_UTILS.tryMatchUserName( user_name );
+			if ( !best_guess.username ) { resolve( false ); return; }
 			let result;
-			if ( best_guess_user_name.method === "nickname" ) {
-				result = await compute_twitch_channel_streak( best_guess_user_name.channel );
+			if ( best_guess.method === "nickname" ) {
+				result = await compute_twitch_channel_streak( best_guess.channel );
 			}
 			else {
-				let games = await SCRAPER_UTILS.getUsersLatestGames( best_guess_user_name.username );
-				result = _compute_streak( games , best_guess_user_name.username , channel );
+				let games = await SCRAPER_UTILS.getUsersLatestGames( best_guess.username );
+				result = _compute_streak( games , best_guess.username , channel );
 			}
 			resolve( result );
 		}
