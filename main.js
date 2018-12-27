@@ -136,6 +136,7 @@ function on_message( from , to , text , message ) {
 		}
 		// Need to combine the second and third items in split message array
 		// In case someone typed 'who is jaguar 92' instead of 'who is jaguar_92'
+		// ToDo: Add FIDE lookup to include url
 		else if ( text.startsWith( "!who" ) ) {
 			let username = text.split( " " );
 			if ( username[ 1 ] === "is" ) {
