@@ -208,7 +208,7 @@ function get_who_is_user_name( user_name ) {
 			user = await _get_who_is_user_name( best_match );
 			result.best_match = best_match;
 			result.message = best_match + " is : " + user.real_name;
-			result.real_name = real_name;
+			result.real_name = user.real_name;
 			resolve( result );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
