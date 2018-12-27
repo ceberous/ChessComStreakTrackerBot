@@ -56,6 +56,40 @@ function scrape_game_archive_page( user_name , page_number ) {
 }
 module.exports.getUsersLatestGames = scrape_game_archive_page;
 
-// ( async ()=> {
-// 	await scrape_game_archive_page( "erichansen" );
-// })();
+
+
+// Only Search Last Name ??
+// http://ratings.fide.com/advaction.phtml?idcode=&name=Naroditsky&title=&other_title=&country=%25&sex=&srating=0&erating=3000&birthday=&radio=name&line=asc
+// Then compare list to Real Name
+const base_fide_search_url = "http://ratings.fide.com/advaction.phtml?idcode=&name=";
+const end_fide_search_url = "&title=&other_title=&country=%25&sex=&srating=0&erating=3000&birthday=&radio=name&line=asc";
+function scrape_fide_search_results( real_name ) {
+	return new Promise( function( resolve , reject ) {
+		try {
+			if ( !real_name ) { resolve( false ); return; }
+			if ( real_name.length < 1 ) { resolve( false ); return; }
+			real_name = real_name.split( " " );
+			let search_name;
+			if ( real_name[ 1 ] ) { search_name = real_name[ 1 ]; }
+			else { search_name = real_name[ 0 ]; }
+			let url = base_fide_search_url + search_name + end_fide_search_url;
+			let body = await MAKE_REQUEST( url );
+			if ( !body ) { resolve( false ); return; }
+			try { var $ = cheerio.load( body ); }
+			catch( err ) { resolve( false ); return; }
+			let main_body = $( "table .mainbody" );
+			let main_table = $( mainbody[ 0 ] ).children();
+			main_table = main_table[ 0 ];
+			let main_row = $( main_table ).children();
+			main_row = main_row[ 1 ];
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.getFideProfile = scrape_game_archive_page;
+
+( async ()=> {
+	//await scrape_game_archive_page( "erichansen" );
+	await scrape_game_archive_page( "Daniel Naroditsky" );
+})();
