@@ -90,10 +90,10 @@ async function post_who_is_user_name( channel , user_name ) {
 			// Username provided doesn't exist ,
 			// but tried to guess Best Match ,
 			// However , there still is no 'Real Name' for the 'Best Match'
-			final_message = "No Data for " + result.best_match;
+			final_message = "no data for " + result.best_match;
 		}
 		else {
-			final_message = "No Data for " + user_name;
+			final_message = "no data for " + user_name;
 		}
 	}
 	else {
@@ -159,6 +159,8 @@ function on_message( from , to , text , message ) {
 				post_twitch_channel_streak( channel );
 			}
 		}
+		// Need to combine the second and third items in split message array
+		// In case someone typed 'who is jaguar 92' instead of 'who is jaguar_92'
 		else if ( text.startsWith( "!who" ) ) {
 			let username = text.split( " " );
 			if ( username[ 1 ] === "is" ) {
