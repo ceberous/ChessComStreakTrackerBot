@@ -15,6 +15,8 @@ function _compute_streak( games , user_name , channel ) {
 	else { emote = CHANNEL_MAP[ channel ].emote; }
 	let result = { score: 0 , reverse_score: 0 , opponent: last_opponent , our_guy: user_name , message: "" };
 
+	// Todo: Calculate Total Overall Score vs Last Opponent
+
 	//let streak_games = [];
 	for ( let i = 0; i < games.length; ++i ) {
 		if ( games[ i ][ 2 ] === last_opponent ) {
