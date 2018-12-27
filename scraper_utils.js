@@ -10,6 +10,8 @@ function scrape_game_archive_page( user_name , page_number ) {
 		try {
 			if ( !user_name ) { resolve( false ); return; }
 			//if ( user_name.length < 1 ) { resolve( false ); return; }
+			user_name = user_name.toLowerCase();
+			console.log( "Scraping Games for 'Our Guy' " + user_name );
 			page_number = page_number || 1;
 			let url = base_archive_url + user_name + "?page=" + page_number.toString();
 			let body = await MAKE_REQUEST( url );
@@ -46,6 +48,7 @@ function scrape_game_archive_page( user_name , page_number ) {
 				game_id = game_id.split( "?" )[ 0 ];
 				game_id = game_id.split( "/game/" )[ 1 ];
 				entry.push( game_id );
+				//console.log( entry );
 				final_results.push( entry );
 			}
 			//console.log( final_results );
@@ -64,7 +67,7 @@ module.exports.getUsersLatestGames = scrape_game_archive_page;
 const base_fide_search_url = "http://ratings.fide.com/advaction.phtml?idcode=&name=";
 const end_fide_search_url = "&title=&other_title=&country=%25&sex=&srating=0&erating=3000&birthday=&radio=name&line=asc";
 function scrape_fide_search_results( real_name ) {
-	return new Promise( function( resolve , reject ) {
+	return new Promise( async function( resolve , reject ) {
 		try {
 			if ( !real_name ) { resolve( false ); return; }
 			if ( real_name.length < 1 ) { resolve( false ); return; }
@@ -89,7 +92,7 @@ function scrape_fide_search_results( real_name ) {
 }
 module.exports.getFideProfile = scrape_game_archive_page;
 
-( async ()=> {
-	//await scrape_game_archive_page( "erichansen" );
-	await scrape_game_archive_page( "Daniel Naroditsky" );
-})();
+// ( async ()=> {
+// 	//await scrape_game_archive_page( "erichansen" );
+// 	await scrape_game_archive_page( "Daniel Naroditsky" );
+// })();

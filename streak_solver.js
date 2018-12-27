@@ -59,9 +59,15 @@ function compute_user_streak( user_name , channel ) {
 		try {
 			//let games = await API_UTILS.getUsersLatestGames( user_name );
 			let best_guess_user_name = await API_UTILS.tryMatchUserName( user_name );
-			if ( !best_guess_user_name ) { resolve( false ); return; }
-			let games = await SCRAPER_UTILS.getUsersLatestGames( best_guess_user_name );
-			let result = _compute_streak( games , best_guess_user_name , channel );
+			if ( !best_guess_user_name.username ) { resolve( false ); return; }
+			let result;
+			if ( best_guess_user_name.method === "nickname" ) {
+				result = await compute_twitch_channel_streak( best_guess_user_name.channel );
+			}
+			else {
+				let games = await SCRAPER_UTILS.getUsersLatestGames( best_guess_user_name.username );
+				result = _compute_streak( games , best_guess_user_name.username , channel );
+			}
 			resolve( result );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
@@ -73,6 +79,7 @@ module.exports.getUserStreak = compute_user_streak;
 function compute_twitch_channel_streak( channel ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
+			console.log( "Trying to Find Latest Twitch Channel : " + channel + " latest 'Live' User" );
 			if ( !CHANNEL_MAP[ channel ] ) { resolve( false ); return; }
 			let games = await PROMISE_ALL( CHANNEL_MAP[ channel ].usernames , SCRAPER_UTILS.getUsersLatestGames , 3 );
 			let firsts = games.map( x => x[ 0 ] );

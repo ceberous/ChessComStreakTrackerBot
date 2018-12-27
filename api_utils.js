@@ -126,7 +126,7 @@ function _match_nickname( user_name_attempt ) {
 	for ( var channel in CHANNEL_MAP ) {
 		for ( let i = 0; i < CHANNEL_MAP[ channel ][ "nicknames" ].length; ++i ) {
 			if ( CHANNEL_MAP[ channel ][ "nicknames" ][ i ] === user_name_attempt ) {
-				return CHANNEL_MAP[ channel ][ "usernames" ][ 0 ].toLowerCase();
+				return [ CHANNEL_MAP[ channel ][ "usernames" ][ 0 ].toLowerCase() , channel ];
 			}
 		}
 	}
@@ -138,18 +138,23 @@ function try_match_username( user_name_attempt ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			user_name_attempt = user_name_attempt.toLowerCase();
-
+			let result = { username: false , method: false , channel: false };
 			// Todo : Add Common Nickname Table
 			let matched_nickname = _match_nickname( user_name_attempt );
-			if ( matched_nickname ) {
-				resolve( matched_nickname );
+			if ( matched_nickname !== false ) {
+				result.username = matched_nickname[ 0 ];
+				result.channel = matched_nickname[ 1 ];
+				result.method = "nickname";
+				resolve( result );
 				return;
 			}
 
 			let verified = await MyRedis.keyGet( "un:" + user_name_attempt );
 			if ( verified !== null && verified !== "null" ) {
 				console.log( "Found Verified Match  = " + verified );
-				resolve( verified );
+				result.username = verified;
+				result.method = "verified";
+				resolve( result );
 				return;
 			}
 
@@ -173,7 +178,9 @@ function try_match_username( user_name_attempt ) {
 			console.log( suggestions );
 			let most_likely_guess = _get_most_frequent_in_array( suggestions );
 			console.log( "Most Likely Username is " + most_likely_guess );
-			resolve( most_likely_guess );
+			result.username = most_likely_guess;
+			result.method = "best_match";
+			resolve( result );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
@@ -221,14 +228,13 @@ function get_who_is_user_name( user_name ) {
 				}
 			}
 			let best_match = await try_match_username( user_name );
-			if ( !best_match ) {
-				resolve( resolve );
+			if ( !best_match.username ) {
+				resolve( false );
 				return;
 			}
+			user = await _get_who_is_user_name( best_match.username );
 			result.best_match = best_match;
-			user = await _get_who_is_user_name( best_match );
-			result.best_match = best_match;
-			result.message = best_match + " is : " + user.real_name;
+			result.message = best_match.username + " is : " + user.real_name;
 			result.real_name = user.real_name;
 			resolve( result );
 		}
