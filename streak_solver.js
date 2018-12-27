@@ -43,7 +43,7 @@ function _compute_streak( games , user_name , channel ) {
 	}
 	if ( result.reverse_score > 0 ) {
 		//result.message =  user_name + " vs " + last_opponent + " [-" + result.reverse_score.toString() + "] = Reverse Adoption PogChamp BibleThump";
-		result.message =  user_name + " vs " + last_opponent + " [-" + result.reverse_score.toString() + "] = Reverse Adoption BibleThump";
+		result.message =  user_name + " vs " + last_opponent + " [-" + result.reverse_score.toString() + "] = Reverse BibleThump";
 	}
 	else if ( result.score > 0 ) {
 		result.message = user_name + " vs " + last_opponent + " [" + result.score.toString() + "] " + ( emote + " " ).repeat( result.score );;
