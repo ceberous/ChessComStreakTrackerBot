@@ -77,9 +77,10 @@ function irc_post( channel_name , message ) {
 
 async function post_who_is_user_name( channel , user_name ) {
 	let real_name_message = await API_UTILS.whoIsUserName( user_name );
-	if ( !real_name_message[ 1 ] ) { return; }
+	if ( !real_name_message[ 1 ] ) { real_name_message = "No Data for " + user_name; }
 	if ( !real_name_message[ 0 ] ) { real_name_message = "No Data for " + real_name_message[ 1 ]; }
 	else { real_name_message = real_name_message[ 0 ]; }
+	if ( real_name_message.length < 2 ) { real_name_message = "No Data for " + user_name; }
 	irc_post( channel , real_name_message );
 }
 
@@ -142,8 +143,12 @@ function on_message( from , to , text , message ) {
 		}
 		else if ( text.startsWith( "!who" ) ) {
 			let username = text.split( " " );
+			if ( username[ 1 ] === "is" ) {
+				username = username[ 2 ];
+			}
+			else { username = username[ 1 ]; }
 			let channel = from.substring( 1 );
-			post_who_is_user_name( channel , username[ 1 ] );
+			post_who_is_user_name( channel , username );
 		}
 		else if ( text.startsWith( "!whois" ) ) {
 			let username = text.split( " " );
@@ -170,5 +175,8 @@ function on_message( from , to , text , message ) {
 	await IRC_Client.connect();
 	console.log( "Chess Com Streak Bot Restarted" );
 	IRC_Client.on( "message" , on_message );
+	console.time( "update-uns" );
+	await API_UTILS.updateUserNamesRedis();
+	console.timeEnd( "update-uns" );
 	//post_streak();
 })();

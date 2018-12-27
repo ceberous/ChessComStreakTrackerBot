@@ -31,7 +31,7 @@ function get_usernames_in_country( country_iso_code ) {
 			let chunks = [];
 			while ( players.length > 0 ) {
 				let chunk = players.splice( 0 , 500 );
-				let args = chunk.map( x => [ "set" , "un:" + x , x ] );
+				let args = chunk.map( x => [ "setnx" , "un:" + x , x ] );
 				chunks.push( args );
 			}
 			for ( let i = 0; i < chunks.length; ++i ) {
@@ -41,7 +41,7 @@ function get_usernames_in_country( country_iso_code ) {
 
 			// while ( players.length > 0 ) {
 			// 	let chunk = players.splice( 0 , 500 );
-			// 	let args = chunk.map( x => [ "set" , "un:" + x , x ] );
+			// 	let args = chunk.map( x => [ "setnx" , "un:" + x , x ] );
 			// 	await MyRedis.keySetMulti( args );
 			// 	await SLEEP( 1000 );
 			// }
@@ -71,7 +71,8 @@ function update_chess_com_usernames() {
 			// beacuse apparently "erichansen" isn't actually on the list of Canadian Players
 			// https://api.chess.com/pub/country/CA/players
 			// Even though , https://api.chess.com/pub/player/erichansen says that he is
-			await MyRedis.keySet( "un:erichansen" , "erichansen" );
+			await MyRedis.keySet( "un:erichansen" , "erichansen" ); // Staff ?
+			await MyRedis.keySet( "un:lethbridgechess" , "lethbridgechess" ); // On purpose ?
 
 			console.timeEnd( "update_usernames" );
 			resolve();
@@ -79,6 +80,7 @@ function update_chess_com_usernames() {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
+module.exports.updateUserNamesRedis = update_chess_com_usernames;
 
 function _build_patterns_from_char( wString , wChar ) {
 	let patterns = [];
@@ -131,6 +133,8 @@ function try_match_username( user_name_attempt ) {
 			}
 
 			let patterns = _build_patterns_from_char( user_name_attempt , "?" );
+			patterns.push( user_name_attempt + "*" );
+			patterns.push( "*" + user_name_attempt );
 			//let patterns_2 = _build_patterns_from_char( user_name_attempt , "*" );
 			//let patterns = [ ...patterns_1 , ...patterns_2 ];
 			patterns = patterns.map( x => "un:" + x );
@@ -178,7 +182,12 @@ function get_who_is_user_name( user_name ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			let real_name = await _get_who_is_user_name( user_name );
-			if ( real_name ) { resolve( [ user_name + " is : " + real_name , user_name ]  ); return; }
+			if ( real_name ) {
+				if ( real_name !== "unknown" ) {
+					resolve( [ user_name + " is : " + real_name , user_name ]  );
+					return;
+				}
+			}
 			let best_match = await try_match_username( user_name );
 			if ( !best_match ) { resolve( [ false , false ] ); return; }
 			real_name = await _get_who_is_user_name( best_match );
