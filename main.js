@@ -116,7 +116,7 @@ async function post_user_streak( channel , user_name ) {
 	//user_name = user_name || streak_data.our_guy;
 	console.log( streak_data );
 	if ( streak_data.score < 1 ) {
-		let msg = streak_data.our_guy + " vs " + streak_data.opponent + " = No Streak";
+		let msg = streak_data.our_guy + /*" vs " + streak_data.opponent + */ " = No Streak";
 		console.log( msg );
 		irc_post( channel , msg );
 		return;
@@ -175,8 +175,6 @@ function on_message( from , to , text , message ) {
 	await IRC_Client.connect();
 	console.log( "Chess Com Streak Bot Restarted" );
 	IRC_Client.on( "message" , on_message );
-	console.time( "update-uns" );
-	await API_UTILS.updateUserNamesRedis();
-	console.timeEnd( "update-uns" );
+	//await API_UTILS.updateUserNamesRedis();
 	//post_streak();
 })();
