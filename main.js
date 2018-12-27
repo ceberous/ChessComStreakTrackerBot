@@ -50,7 +50,7 @@ const IRC_Client = new tmi.client({
 	},
 	identity: IRC_Identity ,
 	//channels: [ "#chessbrah" ] ,
-	channels: [ "#gothamchess" ] ,
+	channels: [ "#gothamchess" , "#dy_hydro_o" ] ,
 	//channels: [ "#dy_hydro_o" , "#ram_ram_ram_ram" ]
 });
 
