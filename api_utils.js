@@ -122,11 +122,30 @@ function _get_most_frequent_in_array( arr ) {
 	return mostFrequentElement;
 }
 
+function _match_nickname( user_name_attempt ) {
+	for ( var channel in CHANNEL_MAP ) {
+		for ( let i = 0; i < CHANNEL_MAP[ channel ][ "nicknames" ].length; ++i ) {
+			if ( CHANNEL_MAP[ channel ][ "nicknames" ][ i ] === user_name_attempt ) {
+				return CHANNEL_MAP[ channel ][ "usernames" ][ 0 ].toLowerCase();
+			}
+		}
+	}
+	return false;
+}
+
 // https://redis.io/commands/keys
 function try_match_username( user_name_attempt ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			user_name_attempt = user_name_attempt.toLowerCase();
+
+			// Todo : Add Common Nickname Table
+			let matched_nickname = _match_nickname( user_name_attempt );
+			if ( matched_nickname ) {
+				resolve( matched_nickname );
+				return;
+			}
+
 			let verified = await MyRedis.keyGet( "un:" + user_name_attempt );
 			if ( verified !== null && verified !== "null" ) {
 				console.log( "Found Verified Match  = " + verified );
