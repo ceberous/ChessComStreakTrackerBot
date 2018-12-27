@@ -37,6 +37,7 @@ var CHANNEL_COOLDOWN_MAP = {
 	alexandrabotez: { last_time: 0 , cooldown: 10 } ,
 	manneredmonkey: { last_time: 0 , cooldown: 10 } ,
 	dy_hydro_o: { last_time: 0 , cooldown: 10 } ,
+	ram_ram_ram_ram: { last_time: 0 , cooldown: 10 } ,
 };
 
 const IRC_Client = new tmi.client({
@@ -48,8 +49,9 @@ const IRC_Client = new tmi.client({
 		debug: true
 	},
 	identity: IRC_Identity ,
-	//channels: [ "#chessbrah" ]
-	channels: [ "#dy_hydro_o" ]
+	//channels: [ "#chessbrah" ] ,
+	channels: [ "#gothamchess" ] ,
+	//channels: [ "#dy_hydro_o" , "#ram_ram_ram_ram" ]
 });
 
 function irc_post( channel_name , message ) {
@@ -110,7 +112,7 @@ async function post_twitch_channel_streak( channel ) {
 		//irc_post( channel , "User Offline" );
 		return;
 	}
-	user_name = user_name || streak_data.our_guy;
+	let user_name = streak_data.our_guy;
 	console.log( streak_data );
 	if ( streak_data.score < 1 ) {
 		let msg = user_name + " vs " + streak_data.opponent + " = No Streak";
@@ -176,15 +178,15 @@ function on_message( from , to , text , message ) {
 			post_who_is_user_name( channel , username[ 1 ] );
 		}
 	}
-	else if ( text.startsWith( "who" ) ) {
-		let channel = from.substring( 1 );
-		let username = text.split( " " );
-		if ( username[ 1 ] === "is" ) {
-			post_who_is_user_name( channel , username[ 2 ] );
-		}
-		// else { username = username[ 1 ]; }
-		// post_who_is_user_name( channel , username );
-	}
+	// else if ( text.startsWith( "who" ) ) {
+	// 	let channel = from.substring( 1 );
+	// 	let username = text.split( " " );
+	// 	if ( username[ 1 ] === "is" ) {
+	// 		post_who_is_user_name( channel , username[ 2 ] );
+	// 	}
+	// 	// else { username = username[ 1 ]; }
+	// 	// post_who_is_user_name( channel , username );
+	// }
 }
 
 (async ()=>{
