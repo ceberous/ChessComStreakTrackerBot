@@ -31,13 +31,13 @@ catch( e ) { Personal = require( "../personal_chess_com_streak_bot.js" ); }
 const IRC_Identity = Personal.irc.identity;
 
 var CHANNEL_COOLDOWN_MAP = {
-	chessbrah: { last_time: 0 , cooldown: 10 } ,
-	gmhikaru: { last_time: 0 , cooldown: 10 } ,
-	gothamchess: { last_time: 0 , cooldown: 10 } ,
-	alexandrabotez: { last_time: 0 , cooldown: 10 } ,
-	manneredmonkey: { last_time: 0 , cooldown: 10 } ,
-	dy_hydro_o: { last_time: 0 , cooldown: 10 } ,
-	ram_ram_ram_ram: { last_time: 0 , cooldown: 10 } ,
+	chessbrah: { last_time: 0 , cooldown: 10 , emote: "cbrahAdopt" } ,
+	gmhikaru: { last_time: 0 , cooldown: 10 , emote: "cbrahAdopt" } ,
+	gothamchess: { last_time: 0 , cooldown: 10 , emote: "cbrahAdopt" } ,
+	alexandrabotez: { last_time: 0 , cooldown: 10 , emote: "cbrahAdopt" } ,
+	manneredmonkey: { last_time: 0 , cooldown: 10 , emote: "cbrahAdopt" } ,
+	dy_hydro_o: { last_time: 0 , cooldown: 10 , emote: "cbrahAdopt" } ,
+	ram_ram_ram_ram: { last_time: 0 , cooldown: 10 , emote: "cbrahAdopt" } ,
 };
 
 const IRC_Client = new tmi.client({
@@ -50,7 +50,8 @@ const IRC_Client = new tmi.client({
 	},
 	identity: IRC_Identity ,
 	//channels: [ "#chessbrah" ] ,
-	channels: [ "#gothamchess" , "#dy_hydro_o" ] ,
+	//channels: [ "#gothamchess" , "#dy_hydro_o" ] ,
+	channels: [ "#dy_hydro_o" ] ,
 	//channels: [ "#dy_hydro_o" , "#ram_ram_ram_ram" ]
 });
 
@@ -79,12 +80,6 @@ function irc_post( channel_name , message ) {
 
 // { username: user_name , message: null , best_match: false , real_name: false };
 async function post_who_is_user_name( channel , user_name ) {
-	// let real_name_message = await API_UTILS.whoIsUserName( user_name );
-	// if ( !real_name_message[ 1 ] ) { real_name_message = "No Data for " + user_name; }
-	// if ( !real_name_message[ 0 ] ) { real_name_message = "No Data for " + real_name_message[ 1 ]; }
-	// else { real_name_message = real_name_message[ 0 ]; }
-	// if ( real_name_message.length < 2 ) { real_name_message = "No Data for " + user_name; }
-	// irc_post( channel , real_name_message );
 	let final_message;
 	let result = await API_UTILS.whoIsUserName( user_name );
 	if ( !result.message ) {
@@ -105,35 +100,29 @@ async function post_who_is_user_name( channel , user_name ) {
 }
 
 async function post_twitch_channel_streak( channel ) {
-	//console.log( channel );
-	//let streak_data = await API_UTILS.getTwitchChannelStreak( channel , user_name );
 	let streak_data = await STREAK_SOLVER.getTwitchChannelStreak( channel );
 	if ( !streak_data ) {
 		//irc_post( channel , "User Offline" );
 		return;
 	}
-	let user_name = streak_data.our_guy;
 	console.log( streak_data );
 	if ( streak_data.score < 1 ) {
-		let msg = user_name + " vs " + streak_data.opponent + " = No Streak";
+		let msg = streak_data.our_guy + " vs " + streak_data.opponent + " = No Streak";
 		console.log( msg );
 		irc_post( channel , msg );
 		return;
 	}
 
-	let message = streak_data.message + " " + "cbrahAdopt ".repeat( streak_data.score );
+	let message = streak_data.message + " " +  ( CHANNEL_COOLDOWN_MAP[ channel ].emote + " " ).repeat( streak_data.score );
 	irc_post( channel , message );
 }
 
 async function post_user_streak( channel , user_name ) {
-	//console.log( channel );
-	//let streak_data = await API_UTILS.getUsersCurrentStreak( channel , user_name );
 	let streak_data = await STREAK_SOLVER.getUserStreak( user_name );
 	if ( !streak_data ) {
 		//irc_post( channel , "User Offline" );
 		return;
 	}
-	//user_name = user_name || streak_data.our_guy;
 	console.log( streak_data );
 	if ( streak_data.score < 1 ) {
 		let msg = streak_data.our_guy + /*" vs " + streak_data.opponent + */ " = No Streak";
@@ -142,7 +131,7 @@ async function post_user_streak( channel , user_name ) {
 		return;
 	}
 
-	let message = streak_data.message + " " + "cbrahAdopt ".repeat( streak_data.score );
+	let message = streak_data.message + " " + ( CHANNEL_COOLDOWN_MAP[ channel ].emote + " " ).repeat( streak_data.score );
 	irc_post( channel , message );
 }
 
@@ -178,6 +167,7 @@ function on_message( from , to , text , message ) {
 			post_who_is_user_name( channel , username[ 1 ] );
 		}
 	}
+	// Ask vsim
 	// else if ( text.startsWith( "who" ) ) {
 	// 	let channel = from.substring( 1 );
 	// 	let username = text.split( " " );

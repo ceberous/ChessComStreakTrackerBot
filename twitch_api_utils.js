@@ -204,7 +204,7 @@ module.exports.getLiveUsers = GET_LIVE_USERS;
 	let r1 = await followUserName( "manneredmonkey" );
 	let r2 = await followUserName( "alexandrabotez" );
 	// console.log( r1 );
-	// console.log( r1 );
+	// console.log( r2 );
 	let r3 = await getFollowers();
 	console.log( r3 );
 })();
