@@ -122,9 +122,7 @@ async function post_user_streak( channel , user_name ) {
 }
 
 async function post_user_stats( channel , user_name , type ) {
-	let matched = await API_UTILS.tryMatchUserName( user_name );
-	if ( !matched.username ) { return; }
-	let stats_data = await SCRAPER_UTILS.getChessComUserStats( matched.username );
+	let stats_data = await SCRAPER_UTILS.getChessComUserStats( user_name );
 	if ( !stats_data ) {
 		//irc_post( channel , "No User Stats" );
 		return;
@@ -147,9 +145,11 @@ async function post_user_stats( channel , user_name , type ) {
 	else if ( type === "koth" ) { type = "king_of_the_hill"; }
 	let l_key = type.toLowerCase().replace( / /g , "_" );
 	let message;
-	if ( !stats_data[ l_key ] ) { message = matched.username + type + " = uknown"; }
+	user_name = stats_data.username;
+	stats_data = stats_data.result;
+	if ( !stats_data[ l_key ] ) { message = user_name + type + " = uknown"; }
 	else {
-		message = matched.username + " " + stats_data[ l_key ].label + " = " + stats_data[ l_key ].score;
+		message = user_name + " " + stats_data[ l_key ].label + " = " + stats_data[ l_key ].score;
 	}
 	console.log( message );
 	irc_post( channel , message );

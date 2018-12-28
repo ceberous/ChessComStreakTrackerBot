@@ -34,8 +34,11 @@ function MAKE_REQUEST_WITH_PUPPETEER( wURL ) {
 			console.log( "Searching --> " + wURL );
 			const browser = await puppeteer.launch( /* { args: [ "--disable-http2" ] } */ );
 			const page = await browser.newPage();
-			await page.goto( wURL /* , { waitUntil: "networkidle2" } */ );
-			var wBody = await page.content();
+			let response = await page.goto( wURL /* , { waitUntil: "networkidle2" } */ );
+			let wBody = false;
+			if ( response._status !== 404 ) {
+				wBody = await page.content();
+			}
 			await browser.close();
 			resolve( wBody );
 		}

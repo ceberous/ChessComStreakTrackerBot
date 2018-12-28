@@ -1,5 +1,5 @@
 const cheerio = require( "cheerio" );
-
+const API_UTILS = require( "./api_utils.js" );
 const MAKE_REQUEST = require( "./generic_utils.js" ).makeRequest;
 const MAKE_REQUEST_WITH_PUPPETEER = require( "./generic_utils.js" ).makeRequestWithPuppeteer;
 
@@ -67,6 +67,18 @@ function scrape_chess_com_profile_stats( user_name ){
 			console.time( "scrape_stats" );
 			let url = chess_com_profile_base_url + user_name;
 			let body = await MAKE_REQUEST_WITH_PUPPETEER( url );
+			if ( !body ) {
+				console.log( "requst failed" );
+				let matched = await API_UTILS.tryMatchUserName( user_name );
+				if ( !matched.username ) { resolve( false ); return; }
+				user_name = matched.username;
+				url = chess_com_profile_base_url + user_name;
+				body = await MAKE_REQUEST_WITH_PUPPETEER( url );
+				if ( !body ) {
+					resolve( false );
+					return;
+				}
+			}
 			try { var $ = cheerio.load( body ); }
 			catch( err ) { resolve( false ); return; }
 			let result = {};
@@ -85,7 +97,7 @@ function scrape_chess_com_profile_stats( user_name ){
 				result[ l_key ] = { score: x , label: label };
 			}
 			console.timeEnd( "scrape_stats" );
-			resolve( result );
+			resolve( { username: user_name , result: result } );
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
@@ -128,6 +140,6 @@ module.exports.getFideProfile = scrape_game_archive_page;
 // ( async ()=> {
 // 	//await scrape_game_archive_page( "erichansen" );
 // 	//await scrape_game_archive_page( "Daniel Naroditsky" );
-// 	let result = await scrape_chess_com_profile_stats( "erichansen" );
+// 	let result = await scrape_chess_com_profile_stats( "bless-rn" );
 // 	console.log( result );
 // })();
