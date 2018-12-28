@@ -5,7 +5,7 @@ module.exports.CHANNEL_MAP = {
 	gothamchess: { emote: "cbrahAdopt" , usernames: [ "GothamChess" , "Blindovich" ] , nicknames: [ "levy" ]  },
 	alexandrabotez: { emote: "cbrahAdopt" , usernames: [  ]  , nicknames: [] },
 	manneredmonkey: { emote: "cbrahAdopt" , usernames: [ "ekurtz" ]  , nicknames: [ "mm" ] },
-	johnbartholomew: { emote: "cbrahAdopt" , usernames: [ "Fins0905" ] , nicknames: []  },
+	johnbartholomew: { emote: "cbrahAdopt" , usernames: [ "Fins0905" ] , nicknames: [ "fins" , "jb" ]  },
 	drdragonitsky: { emote: "cbrahAdopt" , usernames: [ "DanielNaroditsky" ] , nicknames: [ "naro" ]  },
 };
 
