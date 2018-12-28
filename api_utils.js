@@ -212,6 +212,12 @@ function _get_who_is_user_name( user_name ) {
 function get_who_is_user_name( user_name ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
+
+			let matched_nickname = _match_nickname( user_name );
+			if ( matched_nickname !== false ) {
+				user_name = matched_nickname[ 0 ];
+			}
+
 			let result = { username: user_name , message: false , best_match: false , real_name: false };
 			let user = await _get_who_is_user_name( user_name );
 			console.log( user );
