@@ -159,11 +159,12 @@ function on_message( from , to , text , message ) {
 			}
 		}
 		else if ( text.startsWith( "!stats" ) ) {
-			let username = text.split( " " );
+			let message = text.split( " " );
+			message.shift();
+			let username = message.shift();
+			let data = message.join( " " );
 			let channel = from.substring( 1 );
-			if ( username[ 2 ] ) {
-				post_user_stats( channel , username[ 1 ] , username[ 2 ] );
-			}
+			post_user_stats( channel , username , data );
 
 		}
 		// Need to combine the second and third items in split message array
