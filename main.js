@@ -131,8 +131,20 @@ async function post_user_stats( channel , user_name , type ) {
 	}
 	console.log( stats_data );
 	type = type || "fide";
-	if ( type === "puzzle" || type === "pr" ) { type = "puzzle_rush"; }
-	if ( type === "960" ) { type = "live_960"; }
+	if ( type === "puzzle" ) { type = "puzzle_rush"; }
+	else if ( type === "pr" ) { type = "puzzle_rush"; }
+	else if ( type === "960" ) { type = "live_960"; }
+	else if ( type === "crazy house" ) { type = "crazyhouse"; }
+	else if ( type === "ch" ) { type = "crazyhouse"; }
+	else if ( type === "three check" ) { type = "three_check"; }
+	else if ( type === "3 check" ) { type = "three_check"; }
+	else if ( type === "3c" ) { type = "three_check"; }
+	else if ( type === "3check" ) { type = "three_check"; }
+	else if ( type === "threecheck" ) { type = "three_check"; }
+	else if ( type === "bug house" ) { type = "bughouse"; }
+	else if ( type === "bh" ) { type = "bughouse"; }
+	else if ( type === "king of the hill" ) { type = "king_of_the_hill"; }
+	else if ( type === "koth" ) { type = "king_of_the_hill"; }
 	let l_key = type.toLowerCase().replace( / /g , "_" );
 	let message;
 	if ( !stats_data[ l_key ] ) { message = matched.username + type + " = uknown"; }
