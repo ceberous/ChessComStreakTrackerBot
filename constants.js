@@ -6,7 +6,7 @@ module.exports.CHANNEL_MAP = {
 	alexandrabotez: { emote: "cbrahAdopt" , usernames: [  ]  , nicknames: [] },
 	manneredmonkey: { emote: "cbrahAdopt" , usernames: [ "ekurtz" ]  , nicknames: [ "mm" ] },
 	johnbartholomew: { emote: "cbrahAdopt" , usernames: [ "Fins0905" ] , nicknames: [ "fins" , "jb" ]  },
-	drdragonitsky: { emote: "cbrahAdopt" , usernames: [ "DanielNaroditsky" ] , nicknames: [ "naro" ]  },
+	drdragonitsky: { emote: "cbrahAdopt" , usernames: [ "DanielNaroditsky" ] , nicknames: [ "naro" , "danya" ]  },
 };
 
 module.exports.COUNTRY_ISOS_P1 = [ "AA" , "AB" , "AC" , "AD" , "AE" , "AF" , "AG" , "AH" , "AI" , "AJ", "AK" , "AL" , "AM"	, "AN" , "AO" , "AP" , "AQ" , "AR" , "AS" , "AT" , "AU" , "AV" , "AW" , "AX" , "AY"	, "AZ" ,
