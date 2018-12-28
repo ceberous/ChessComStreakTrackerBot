@@ -1,4 +1,5 @@
 const request = require( "request" );
+const puppeteer = require( "puppeteer" );
 const pALL = require( "p-all" );
 
 function sleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
@@ -25,6 +26,23 @@ function MAKE_REQUEST( wURL ) {
 	});
 }
 module.exports.makeRequest = MAKE_REQUEST;
+
+function MAKE_REQUEST_WITH_PUPPETEER( wURL ) {
+	// https://github.com/GoogleChrome/puppeteer/issues/822
+	return new Promise( async function( resolve , reject ) {
+		try {
+			console.log( "Searching --> " + wURL );
+			const browser = await puppeteer.launch( /* { args: [ "--disable-http2" ] } */ );
+			const page = await browser.newPage();
+			await page.goto( wURL /* , { waitUntil: "networkidle2" } */ );
+			var wBody = await page.content();
+			await browser.close();
+			resolve( wBody );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.makeRequestWithPuppeteer = MAKE_REQUEST_WITH_PUPPETEER;
 
 
 function PROMISE_FUNCTION_TO_ALL_ARRAY( wArray , wFunction , wConcurrency ) {

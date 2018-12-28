@@ -199,14 +199,37 @@ function GET_LIVE_USERS( wResetIndex ) {
 }
 module.exports.getLiveUsers = GET_LIVE_USERS;
 
+const Channels_URL_Base = "https://api.twitch.tv/kraken/channels/";
+function GET_CHANNEL_SUBS( wChannelName ) {
+	return new Promise( function( resolve , reject ) {
+		try {
+			//let url = Channels_URL_Base + wChannelName + "/subscriptions?limit=1&client_id=" + wTwitchKeys.client_id;
+			let url = Channels_URL_Base + wChannelName + "/subscriptions?limit=1&oauth_token=" + wTwitchKeys.oauth_token;
+			console.log( url );
+			request( url , function ( err , response , body ) {
+		        //if ( err ) { wcl( err ); reject( err ); return; }
+		        console.log( body );
+				// lxR = JSON.parse( body );
+				// if ( xR[ "error" ] ) { if ( xR[ "error"] === "Bad Request" ) { console.log( xR ); resolve( xR ); } }
+				// //var fr = await parseResults();
+				// console.log( xR );
+				// resolve( xR );
+				resolve();
+			});
+
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
 
 ( async ()=> {
-	let r1 = await followUserName( "manneredmonkey" );
-	let r2 = await followUserName( "alexandrabotez" );
+	// let r1 = await followUserName( "manneredmonkey" );
+	// let r2 = await followUserName( "alexandrabotez" );
 	// console.log( r1 );
 	// console.log( r2 );
-	let r3 = await getFollowers();
-	console.log( r3 );
+	//let r3 = await getFollowers();
+	await GET_CHANNEL_SUBS( "chessbrah" );
+	//console.log( r3 );
 })();
 
 module.exports.followUserName = followUserName;

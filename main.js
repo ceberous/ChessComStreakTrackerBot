@@ -14,6 +14,7 @@ const RMU = require( "redis-manager-utils" );
 var MyRedis = null;
 var STREAK_SOLVER = null;
 var API_UTILS = null;
+var SCRAPER_UTILS = null;
 ( async ()=> {
 	MyRedis = new RMU( 2 );
 	await MyRedis.init();
@@ -21,6 +22,7 @@ var API_UTILS = null;
 	console.log( "Connected to Redis" );
 	STREAK_SOLVER = require( "./streak_solver.js" );
 	API_UTILS = require( "./api_utils.js" );
+	SCRAPER_UTILS = require( "./scraper_utils.js" );
 })();
 
 const sleep = require( "./generic_utils.js" ).sleep;
@@ -119,6 +121,28 @@ async function post_user_streak( channel , user_name ) {
 	irc_post( channel , streak_data.message );
 }
 
+async function post_user_stats( channel , user_name , type ) {
+	let matched = await API_UTILS.tryMatchUserName( user_name );
+	if ( !matched.username ) { return; }
+	let stats_data = await SCRAPER_UTILS.getChessComUserStats( matched.username );
+	if ( !stats_data ) {
+		//irc_post( channel , "No User Stats" );
+		return;
+	}
+	console.log( stats_data );
+	type = type || "fide";
+	if ( type === "puzzle" || type === "pr" ) { type = "puzzle_rush"; }
+	if ( type === "960" ) { type = "live_960"; }
+	let l_key = type.toLowerCase().replace( / /g , "_" );
+	let message;
+	if ( !stats_data[ l_key ] ) { message = matched.username + type + " = uknown"; }
+	else {
+		message = matched.username + " " + stats_data[ l_key ].label + " = " + stats_data[ l_key ].score;
+	}
+	console.log( message );
+	irc_post( channel , message );
+}
+
 function on_message( from , to , text , message ) {
 	if ( to.username === IRC_Identity.username ) { return; }
 	//console.log( "Channel == " + from );
@@ -134,12 +158,17 @@ function on_message( from , to , text , message ) {
 				post_twitch_channel_streak( channel );
 			}
 		}
+		else if ( text.startsWith( "!stats" ) ) {
+			let username = text.split( " " );
+			let channel = from.substring( 1 );
+			if ( username[ 2 ] ) {
+				post_user_stats( channel , username[ 1 ] , username[ 2 ] );
+			}
+
+		}
 		// Need to combine the second and third items in split message array
 		// In case someone typed 'who is jaguar 92' instead of 'who is jaguar_92'
 		// ToDo: Add FIDE lookup to include url
-		// Only Search Last Name ??
-		// http://ratings.fide.com/advaction.phtml?idcode=&name=Naroditsky&title=&other_title=&country=%25&sex=&srating=0&erating=3000&birthday=&radio=name&line=asc
-		// Then compare list to Real Name
 		else if ( text.startsWith( "!who" ) ) {
 			let username = text.split( " " );
 			if ( username[ 1 ] === "is" ) {

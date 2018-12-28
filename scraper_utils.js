@@ -1,6 +1,7 @@
 const cheerio = require( "cheerio" );
-//const puppeteer = require( "puppeteer" );
+
 const MAKE_REQUEST = require( "./generic_utils.js" ).makeRequest;
+const MAKE_REQUEST_WITH_PUPPETEER = require( "./generic_utils.js" ).makeRequestWithPuppeteer;
 
 const CHANNEL_MAP = require( "./constants.js" ).CHANNEL_MAP;
 
@@ -59,6 +60,38 @@ function scrape_game_archive_page( user_name , page_number ) {
 }
 module.exports.getUsersLatestGames = scrape_game_archive_page;
 
+const chess_com_profile_base_url = "https://www.chess.com/member/";
+function scrape_chess_com_profile_stats( user_name ){
+	return new Promise( async function( resolve , reject ) {
+		try {
+			console.time( "scrape_stats" );
+			let url = chess_com_profile_base_url + user_name;
+			let body = await MAKE_REQUEST_WITH_PUPPETEER( url );
+			try { var $ = cheerio.load( body ); }
+			catch( err ) { resolve( false ); return; }
+			let result = {};
+			let ratings = $( 'span[class="user-rating"]' );
+			for ( let i = 0; i < ratings.length; ++i ) {
+				let text = $( ratings[ i ] ).parent().text();
+				text = text.trim();
+				text = text.split( "\n" );
+				let label = text[ 0 ];
+				let l_key = label.toLowerCase().replace( / /g , "_" );
+				//console.log( l_key )
+				if ( l_key === "3_check" ) { l_key = "three_check"; }
+				let x = parseInt( text[ 1 ].trim() )
+				if ( isNaN( x ) ) { x = parseInt( text[ 2 ].trim() ) }
+				//console.log( x );
+				result[ l_key ] = { score: x , label: label };
+			}
+			console.timeEnd( "scrape_stats" );
+			resolve( result );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.getChessComUserStats = scrape_chess_com_profile_stats;
+
 
 
 // Only Search Last Name ??
@@ -94,5 +127,7 @@ module.exports.getFideProfile = scrape_game_archive_page;
 
 // ( async ()=> {
 // 	//await scrape_game_archive_page( "erichansen" );
-// 	await scrape_game_archive_page( "Daniel Naroditsky" );
+// 	//await scrape_game_archive_page( "Daniel Naroditsky" );
+// 	let result = await scrape_chess_com_profile_stats( "erichansen" );
+// 	console.log( result );
 // })();
