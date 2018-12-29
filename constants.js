@@ -2,7 +2,7 @@
 module.exports.CHANNEL_MAP = {
 	chessbrah: { emote: "cbrahAdopt" , usernames: [ "erichansen" , "knvb" , "chessbrah" ] , nicknames: [ "cbrah" ]  },
 	gmhikaru: { emote: "cbrahAdopt" , usernames: [ "Hikaru" ] , nicknames: [ "naka" ]  },
-	gothamchess: { emote: "cbrahAdopt" , usernames: [ "GothamChess" , "Blindovich" ] , nicknames: [ "levy" ]  },
+	gothamchess: { emote: "cbrahAdopt" , usernames: [ "GothamChess" , "Blindovich" ] , nicknames: [ "levy" , "levi" , "gotham" ]  },
 	alexandrabotez: { emote: "cbrahAdopt" , usernames: [  ]  , nicknames: [] },
 	manneredmonkey: { emote: "cbrahAdopt" , usernames: [ "ekurtz" ]  , nicknames: [ "mm" ] },
 	johnbartholomew: { emote: "cbrahAdopt" , usernames: [ "Fins0905" ] , nicknames: [ "fins" , "jb" ]  },
