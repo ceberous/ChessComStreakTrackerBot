@@ -129,6 +129,7 @@ async function post_user_stats( channel , user_name , type ) {
 	}
 	console.log( stats_data );
 	type = type || "fide";
+	let ctype = type;
 	if ( type === "puzzle" ) { type = "puzzle_rush"; }
 	else if ( type === "pr" ) { type = "puzzle_rush"; }
 	else if ( type === "960" ) { type = "live_960"; }
@@ -147,7 +148,7 @@ async function post_user_stats( channel , user_name , type ) {
 	let message;
 	user_name = stats_data.username;
 	stats_data = stats_data.result;
-	if ( !stats_data[ l_key ] ) { message = user_name + type + " = uknown"; }
+	if ( !stats_data[ l_key ] ) { message = user_name +  " " + ctype + " = uknown"; }
 	else {
 		message = user_name + " " + stats_data[ l_key ].label + " = " + stats_data[ l_key ].score;
 	}

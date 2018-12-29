@@ -122,6 +122,7 @@ function _get_most_frequent_in_array( arr ) {
 	return mostFrequentElement;
 }
 
+// Returns [ username , channel ]
 function _match_nickname( user_name_attempt ) {
 	for ( var channel in CHANNEL_MAP ) {
 		for ( let i = 0; i < CHANNEL_MAP[ channel ][ "nicknames" ].length; ++i ) {
@@ -132,6 +133,7 @@ function _match_nickname( user_name_attempt ) {
 	}
 	return false;
 }
+module.exports.matchNickName = _match_nickname;
 
 // https://redis.io/commands/keys
 function try_match_username( user_name_attempt ) {
@@ -148,7 +150,6 @@ function try_match_username( user_name_attempt ) {
 				resolve( result );
 				return;
 			}
-
 			let verified = await MyRedis.keyGet( "un:" + user_name_attempt );
 			if ( verified !== null && verified !== "null" ) {
 				console.log( "Found Verified Match  = " + verified );

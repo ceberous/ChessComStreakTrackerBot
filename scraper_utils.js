@@ -2,6 +2,7 @@ const cheerio = require( "cheerio" );
 const API_UTILS = require( "./api_utils.js" );
 const MAKE_REQUEST = require( "./generic_utils.js" ).makeRequest;
 const MAKE_REQUEST_WITH_PUPPETEER = require( "./generic_utils.js" ).makeRequestWithPuppeteer;
+const MATCH_NICKNAME = require( "./api_utils.js" ).matchNickName;
 
 const CHANNEL_MAP = require( "./constants.js" ).CHANNEL_MAP;
 
@@ -64,6 +65,15 @@ const chess_com_profile_base_url = "https://www.chess.com/member/";
 function scrape_chess_com_profile_stats( user_name ){
 	return new Promise( async function( resolve , reject ) {
 		try {
+			// Todo: Add NickName Check
+
+			user_name = user_name.toLowerCase();
+			// Todo : Add Common Nickname Table
+			let matched_nickname = MATCH_NICKNAME( user_name );
+			if ( matched_nickname !== false ) {
+				user_name = matched_nickname[ 0 ];
+			}
+
 			console.time( "scrape_stats" );
 			let url = chess_com_profile_base_url + user_name;
 			let body = await MAKE_REQUEST_WITH_PUPPETEER( url );
@@ -92,7 +102,7 @@ function scrape_chess_com_profile_stats( user_name ){
 				//console.log( l_key )
 				if ( l_key === "3_check" ) { l_key = "three_check"; }
 				let x = parseInt( text[ 1 ].trim() )
-				if ( isNaN( x ) ) { x = parseInt( text[ 2 ].trim() ) }
+				if ( isNaN( x ) ) { console.log( text ); x = parseInt( text[ 2 ].trim() ) }
 				//console.log( x );
 				result[ l_key ] = { score: x , label: label };
 			}
