@@ -199,14 +199,18 @@ function on_message( from , to , text , message ) {
 		}
 	}
 	// Ask vsim
-	// else if ( text.startsWith( "who" ) ) {
-	// 	let channel = from.substring( 1 );
-	// 	let username = text.split( " " );
-	// 	if ( username[ 1 ] === "is" ) {
-	// 		post_who_is_user_name( channel , username[ 2 ] );
-	// 	}
-	// 	// else { username = username[ 1 ]; }
-	// 	// post_who_is_user_name( channel , username );
+	else if ( text.startsWith( "who" ) ) {
+		let channel = from.substring( 1 );
+		let username = text.split( " " );
+		if ( username[ 1 ] === "is" ) {
+			post_who_is_user_name( channel , username[ 2 ] );
+		}
+		// else { username = username[ 1 ]; }
+		// post_who_is_user_name( channel , username );
+	}
+
+	// else if ( text.startsWith( "playlist" ) ) {
+		// Whisper the user the spotify playlist maybe
 	// }
 }
 

@@ -1,7 +1,7 @@
 // Maps Twitch Username to Chess.com Usernames that stream on the channel
 module.exports.CHANNEL_MAP = {
 	chessbrah: { emote: "cbrahAdopt" , usernames: [ "erichansen" , "knvb" , "chessbrah" ] , nicknames: [ "cbrah" ]  },
-	gmhikaru: { emote: "cbrahAdopt" , usernames: [ "Hikaru" ] , nicknames: [ "naka" ]  },
+	gmhikaru: { emote: "cbrahAdopt" , usernames: [ "Hikaru" ] , nicknames: [ "naka" , "hiky" ]  },
 	gothamchess: { emote: "cbrahAdopt" , usernames: [ "GothamChess" , "Blindovich" ] , nicknames: [ "levy" , "levi" , "gotham" ]  },
 	alexandrabotez: { emote: "cbrahAdopt" , usernames: [  ]  , nicknames: [] },
 	manneredmonkey: { emote: "cbrahAdopt" , usernames: [ "ekurtz" ]  , nicknames: [ "mm" ] },

@@ -102,7 +102,7 @@ function scrape_chess_com_profile_stats( user_name ){
 				//console.log( l_key )
 				if ( l_key === "3_check" ) { l_key = "three_check"; }
 				let x = parseInt( text[ 1 ].trim() )
-				if ( isNaN( x ) ) { console.log( text ); x = parseInt( text[ 2 ].trim() ) }
+				if ( isNaN( x ) ) { /*console.log( text );*/ x = parseInt( text[ 2 ].trim() ) }
 				//console.log( x );
 				result[ l_key ] = { score: x , label: label };
 			}

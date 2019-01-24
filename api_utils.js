@@ -136,12 +136,15 @@ function _match_nickname( user_name_attempt ) {
 module.exports.matchNickName = _match_nickname;
 
 // https://redis.io/commands/keys
+const profile_page_base_url = "https://www.chess.com/member/";
 function try_match_username( user_name_attempt ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
+
 			user_name_attempt = user_name_attempt.toLowerCase();
 			let result = { username: false , method: false , channel: false };
-			// Todo : Add Common Nickname Table
+
+			// ( Stage - 1 ) = See if we have a matched nickname
 			let matched_nickname = _match_nickname( user_name_attempt );
 			if ( matched_nickname !== false ) {
 				result.username = matched_nickname[ 0 ];
@@ -150,15 +153,29 @@ function try_match_username( user_name_attempt ) {
 				resolve( result );
 				return;
 			}
+
+			// ( Stage - 2 ) = Check Redis DB for Username
 			let verified = await MyRedis.keyGet( "un:" + user_name_attempt );
 			if ( verified !== null && verified !== "null" ) {
-				console.log( "Found Verified Match  = " + verified );
+				console.log( "Found Verified Match in Redis = " + verified );
 				result.username = verified;
 				result.method = "verified";
 				resolve( result );
 				return;
 			}
 
+			// ( Stage - 3 ) = Check for Valid Chess.com Profile Page
+			let valid_chess_com_profile = await MAKE_REQUEST( profile_page_base_url + user_name_attempt );
+			if ( valid_chess_com_profile ) {
+				console.log( "Found Verified Chess.com Profile  = " + user_name_attempt );
+				result.username = user_name_attempt;
+				result.method = "verified";
+				resolve( result );
+				return;
+			}
+
+
+			// ( Stage - 4 ) = Check for Mistyped Usernames using some pattern matching 'hack'
 			let patterns = _build_patterns_from_char( user_name_attempt , "?" );
 			patterns.push( user_name_attempt + "*" );
 			patterns.push( "*" + user_name_attempt );
@@ -182,6 +199,7 @@ function try_match_username( user_name_attempt ) {
 			result.username = most_likely_guess;
 			result.method = "best_match";
 			resolve( result );
+
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
